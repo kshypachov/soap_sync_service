@@ -3,6 +3,11 @@ from spyne.protocol.soap import Soap11
 from spyne.server.wsgi import WsgiApplication
 from spyne.model.complex import ComplexModel
 from spyne.model.primitive import String
+import models.person
+import utils.config_utils
+
+
+utils.config_utils.load_config()
 
 class Person(ComplexModel):
     id = Integer
