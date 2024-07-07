@@ -9,6 +9,7 @@ import models.person
 import models.search
 import utils.config_utils
 import utils.get_person
+import utils.validation
 import databases
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -37,8 +38,11 @@ from datetime import datetime
 class PersonService(ServiceBase):
     @rpc(models.search.SearchParams, _returns=Iterable(models.person.SpynePersonModel))
     def get_person_by_parameter(ctx, params):
+        print(params)
         params_dict = {params.key: params.value}
+
         try:
+            utils.validation.validate_parameter_name(params.key, models.person.SpynePersonModel)
             result = utils.get_person.get_person_by_params_from_db(params_dict, db_session)
         except Exception as e:
             raise Fault(faultcode="Server", faultstring=str(e))
@@ -57,7 +61,6 @@ class PersonService(ServiceBase):
                 unzr=row.unzr
             ) for row in result
         ]
-
         return persons
 
 application = Application([PersonService],

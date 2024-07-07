@@ -84,3 +84,4 @@ class SpynePersonModel(ComplexModel):
 
         if errors:
             raise Fault(faultcode="Client", faultstring=", ".join(errors))
+
