@@ -1,43 +1,64 @@
-from spyne import Application, rpc, ServiceBase, Integer, Unicode
+import logging
+from spyne import Application, rpc, ServiceBase, Integer, Unicode, Iterable
 from spyne.protocol.soap import Soap11
 from spyne.server.wsgi import WsgiApplication
 from spyne.model.complex import ComplexModel
 from spyne.model.primitive import String
+from spyne.model.fault import Fault
 import models.person
+import models.search
 import utils.config_utils
+import utils.get_person
+import databases
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
+try:
+    conf_obj = utils.config_utils.load_config('config.ini')
+    # Налаштовуємо логування
+    utils.config_utils.configure_logging(conf_obj)
+    logger = logging.getLogger(__name__)
+    logger.info("Configuration loaded")
+    # Отримуємо URL бази даних
+    SQLALCHEMY_DATABASE_URL = utils.config_utils.get_database_url(conf_obj)
+except ValueError as e:
+    logging.critical(f"Failed to load configuration: {e}")
+    exit(1)
 
-utils.config_utils.load_config()
+# створюємо об'єкт database, який буде використовуватися для виконання запитів
+#database = databases.Database(SQLALCHEMY_DATABASE_URL)
 
-class Person(ComplexModel):
-    id = Integer
-    name = Unicode
-    age = Integer
+engine = create_engine(SQLALCHEMY_DATABASE_URL)
+Session = sessionmaker(bind=engine)
+db_session = Session()
 
 people = {}
-
+from datetime import datetime
 class PersonService(ServiceBase):
-    @rpc(Integer, _returns=Person)
-    def get_person(ctx, person_id):
-        person = people.get(person_id)
-        if person is None:
-            return None
-        return person
+    @rpc(models.search.SearchParams, _returns=Iterable(models.person.SpynePersonModel))
+    def get_person_by_parameter(ctx, params):
+        params_dict = {params.key: params.value}
+        try:
+            result = utils.get_person.get_person_by_params_from_db(params_dict, db_session)
+        except Exception as e:
+            raise Fault(faultcode="Server", faultstring=str(e))
 
-    @rpc(Person, _returns=Unicode)
-    def create_person(ctx, person):
-        if person.id in people:
-            return 'Person with this ID already exists.'
-        people[person.id] = person
-        return 'Person created successfully.'
+        # Преобразуем результат в список объектов SpynePersonModel
+        persons = [
+            models.person.SpynePersonModel(
+                id=row.id,
+                name=row.name,
+                surname=row.surname,
+                patronym=row.patronym,
+                dateOfBirth=row.dateOfBirth,
+                gender=row.gender,
+                rnokpp=row.rnokpp,
+                passportNumber=row.passportNumber,
+                unzr=row.unzr
+            ) for row in result
+        ]
 
-    @rpc(Integer, _returns=Unicode)
-    def delete_person(ctx, person_id):
-        if person_id in people:
-            del people[person_id]
-            return 'Person deleted successfully.'
-        else:
-            return 'Person not found.'
+        return persons
 
 application = Application([PersonService],
     tns='spyne.examples.person',

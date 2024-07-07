@@ -3,11 +3,14 @@ from datetime import date, datetime
 import re
 from pydantic import BaseModel, Field, validator
 from spyne import Application, rpc, ServiceBase, Integer, Unicode
+from spyne.model.fault import Fault
+from spyne.model.complex import ComplexModel
 from spyne.protocol.soap import Soap11
 from spyne.server.wsgi import WsgiApplication
 from sqlalchemy import create_engine, Column, Integer as SqlAlchemyInteger, String as SqlAlchemyString, Date
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
+from spyne.model.enum import Enum
 import enum
 
 # SQLAlchemy модель для представления данных о человеке
@@ -16,7 +19,6 @@ Base = declarative_base()
 class genderEnum(str, enum.Enum):
     male = "male"
     female = "female"
-
 class PersonModel(Base):
     __tablename__ = 'person'
     id = Column(SqlAlchemyInteger, primary_key=True, autoincrement=True)
@@ -31,72 +33,54 @@ class PersonModel(Base):
 
 
 # Pydantic модель для валидации данных о человеке
-class PersonMainModel(BaseModel):
-    name: str = Field(min_length=1, max_length=128)
-    surname: str = Field(min_length=1, max_length=128)
-    patronym: str = Field(None, max_length=128)
-    dateOfBirth: date
-    gender: str
-    rnokpp: str
-    passportNumber: str
-    unzr: str
 
-    @validator('dateOfBirth')
-    def validate_date_of_birth(cls, value):
-        if value and value > date.today():
-            raise ValueError('dateOfBirth cannot be in the future')
-        return value
+from spyne import ComplexModel, Integer, Date, Unicode, String
+# Spyne модель для представления данных о человеке с валидацией
+class SpynePersonModel(ComplexModel):
+    id = Integer
+    name = Unicode(min_len=1, max_len=128)
+    surname = Unicode(min_len=1, max_len=128)
+    patronym = Unicode(max_len=128)
+    dateOfBirth = Date
+    gender = String(values=['male', 'female'])
+    rnokpp = Unicode(min_len=10, max_len=10, pattern='^\d{10}$')
+    passportNumber = Unicode(min_len=9, max_len=9, pattern='^\d{9}$')
+    unzr = Unicode(pattern=r'^\d{8}-\d{5}$')
 
-    @validator('name', 'surname', 'patronym')
-    def validate_name(cls, value):
-        if value and not all(char.isalpha() for char in value):
-            raise ValueError('Names must contain only alphabetic characters without space')
-        return value
+    @classmethod
+    def validate(cls, obj):
+        errors = []
 
-    @validator('gender')
-    def validate_gender(cls, value):
-        if value and value not in ['male', 'female']:
-            raise ValueError('Gender must be either "male" or "female"')
-        return value
+        # Валидация поля dateOfBirth
+        if obj.dateOfBirth and obj.dateOfBirth > date.today():
+            errors.append('dateOfBirth cannot be in the future')
 
-    @validator('rnokpp')
-    def validate_rnokpp(cls, value):
-        if value and (not value.isdigit() or len(value) != 10):
-            raise ValueError('RNOKPP must be a 10 digit number')
-        return value
+        # Валидация поля name, surname и patronym
+        for field in ['name', 'surname', 'patronym']:
+            value = getattr(obj, field)
+            if value and not all(char.isalpha() for char in value):
+                errors.append(f'{field} must contain only alphabetic characters without space')
 
-    @validator('passportNumber')
-    def validate_pasport_num(cls, value):
-        if value and (not value.isdigit() or len(value) != 9):
-            raise ValueError('passportNum must be a 9 digit number')
-        return value
+        # Валидация поля unzr
+        if obj.unzr:
+            match = re.match(r'^\d{8}-\d{5}$', obj.unzr)
+            if not match:
+                errors.append('UNZR must be in the format YYYYMMDD-XXXXC')
+            else:
+                date_part, code_part = obj.unzr.split('-')
+                year = int(date_part[:4])
+                month = int(date_part[4:6])
+                day = int(date_part[6:])
+                try:
+                    datetime(year, month, day)
+                except ValueError:
+                    errors.append('Invalid date in UNZR')
+                code = int(code_part[:4])
+                if not (0 <= code <= 9999):
+                    errors.append('Code in UNZR must be in the range from 0000 to 9999')
+                control_digit = int(code_part[4])
+                if not (0 <= control_digit <= 9):
+                    errors.append('Invalid control digit in UNZR')
 
-    @validator('unzr')
-    def validate_unzr(cls, value):
-        # Перевірка формата
-        if not re.match(r'^\d{8}-\d{5}$', value):
-            raise ValueError('UNZR must be in the format YYYYMMDD-XXXXC')
-
-        # Розділ на частини
-        date_part, code_part = value.split('-')
-        year = int(date_part[:4])
-        month = int(date_part[4:6])
-        day = int(date_part[6:])
-
-        # Перевірка правильності дати
-        try:
-            datetime(year, month, day)
-        except ValueError:
-            raise ValueError('Invalid date in UNZR')
-
-        # Перевірка кода
-        code = int(code_part[:4])
-        if not (0 <= code <= 9999):
-            raise ValueError('Code in UNZR must be in the range from 0000 to 9999')
-
-        # Перевірка контрольної цифри
-        control_digit = int(code_part[4])
-        if not (0 <= control_digit <= 9):
-            raise ValueError('Invalid control digit in UNZR')
-
-        return value
+        if errors:
+            raise Fault(faultcode="Client", faultstring=", ".join(errors))
