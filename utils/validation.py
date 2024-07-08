@@ -17,30 +17,20 @@ def validate_parameter_name(param_name: str, validation_model: Any):
 
 
 def validate_parameter(param_name: str, param_value: Any, validation_model: Any):
-    logger.info(f"Validating parameter '{param_name}' with value '{param_value}'")
+    logger.info(f"Validating parameter '{param_name}")
 
     if not hasattr(validation_model, param_name):
-        logger.error(f"Parameter '{param_name}' is not a valid field of SpynePersonModel")
-        raise Fault(faultcode="Client", faultstring=f"Parameter '{param_name}' is not a valid field")
+        logger.error(f"Parameter '{param_name}' is not a valid field of {validation_model.__name__}")
+        raise ValueError(f"Parameter '{param_name}' is not a valid field")
 
-    # Валидация значений параметров
-    field_info = getattr(validation_model, param_name)
-    if isinstance(field_info, str):
-        if not isinstance(param_value, str):
-            raise Fault(faultcode="Client", faultstring=f"Parameter '{param_name}' must be a string")
-        if len(param_value) < field_info.min_len or len(param_value) > field_info.max_len:
-            raise Fault(faultcode="Client",
-                        faultstring=f"Parameter '{param_name}' length must be between {field_info.min_len} and {field_info.max_len}")
+    # Создаем временный объект модели
+    temp_obj =validation_model()
+    setattr(temp_obj, param_name, param_value)
 
-        if hasattr(field_info, 'pattern'):
-            if not re.match(field_info.pattern, param_value):
-                raise Fault(faultcode="Client",
-                            faultstring=f"Parameter '{param_name}' does not match the required pattern")
-
-    if isinstance(field_info, int):
-        if not isinstance(param_value, int):
-            raise Fault(faultcode="Client", faultstring=f"Parameter '{param_name}' must be an integer")
-
-    if isinstance(field_info, datetime):
-        if not isinstance(param_value, datetime):
-            raise Fault(faultcode="Client", faultstring=f"Parameter '{param_name}' must be a datetime")
+    # Пробуем валидировать объект
+    validation_model.validate(temp_obj)
+    # try:
+    #
+    #     print(f"Validation of {param_name} passed!")
+    # except Fault as e:
+    #     print(f"Validation of {param_name} failed: {e}")

@@ -42,7 +42,7 @@ class PersonService(ServiceBase):
         params_dict = {params.key: params.value}
 
         try:
-            utils.validation.validate_parameter_name(params.key, models.person.SpynePersonModel)
+            utils.validation.validate_parameter(params.key, params.value, models.person.SpynePersonModel)
             result = utils.get_person.get_person_by_params_from_db(params_dict, db_session)
         except Exception as e:
             raise Fault(faultcode="Server", faultstring=str(e))
