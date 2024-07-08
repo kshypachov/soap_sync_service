@@ -10,6 +10,7 @@ import models.search
 import utils.config_utils
 import utils.get_person
 import utils.validation
+import utils.delete_person
 import databases
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -62,6 +63,15 @@ class PersonService(ServiceBase):
             ) for row in result
         ]
         return persons
+
+    @rpc(Unicode, _returns=Unicode)
+    def delete_person_by_unzr(ctx, unzr):
+        try:
+            utils.validation.validate_parameter("unzr", unzr, models.person.SpynePersonModel)
+            utils.delete_person.delete_person_by_rnokpp(unzr, db_session)
+        except Exception as e:
+            raise Fault(faultcode="Server", faultstring=str(e))
+        return f"Person with UNZR: {unzr} is deleted"
 
 application = Application([PersonService],
     tns='spyne.examples.person',
