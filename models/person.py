@@ -37,15 +37,16 @@ class PersonModel(Base):
 from spyne import ComplexModel, Integer, Date, Unicode, String
 # Spyne модель для представления данных о человеке с валидацией
 class SpynePersonModel(ComplexModel):
-    id = Integer
+    #id = Integer
     name = Unicode(min_len=1, max_len=128)
     surname = Unicode(min_len=1, max_len=128)
     patronym = Unicode(max_len=128)
     dateOfBirth = Date
-    gender = String(values=['male', 'female'])
-    rnokpp = Unicode(min_len=10, max_len=10, pattern='^\d{10}$')
-    passportNumber = Unicode(min_len=9, max_len=9, pattern='^\d{9}$')
-    unzr = Unicode(pattern=r'^\d{8}-\d{5}$')
+    gender = Unicode(values=['male', 'female'])
+    rnokpp = Unicode(min_len=10, max_len=10)#, pattern='^\d{10}$')
+    passportNumber = Unicode(min_len=9, max_len=9)#, pattern='^\d{9}$')
+    #unzr = Unicode(pattern=r'^\d{8}-\d{5}$')
+    unzr = Unicode(min_len=14, max_len=14)
 
     @classmethod
     def validate(cls, obj):

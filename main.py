@@ -11,6 +11,7 @@ import utils.config_utils
 import utils.get_person
 import utils.validation
 import utils.delete_person
+import utils.update_person
 import databases
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -51,7 +52,7 @@ class PersonService(ServiceBase):
         # Преобразуем результат в список объектов SpynePersonModel
         persons = [
             models.person.SpynePersonModel(
-                id=row.id,
+                #id=row.id,
                 name=row.name,
                 surname=row.surname,
                 patronym=row.patronym,
@@ -72,6 +73,23 @@ class PersonService(ServiceBase):
         except Exception as e:
             raise Fault(faultcode="Server", faultstring=str(e))
         return f"Person with UNZR: {unzr} is deleted"
+
+    @rpc(models.person.SpynePersonModel, _returns=models.person.SpynePersonModel)
+    def edit_person(ctx, person):
+        #Валидация пришедших данных
+        models.person.SpynePersonModel.validate(person)
+
+        person_dict = person.__dict__.copy()
+
+        utils.update_person.update_person_by_unzr(person_dict, db_session)
+
+        print(type(person))
+        print(person)
+        print(person_dict)
+
+        # Вызываем функцию обновления данных
+        utils.update_person.update_person_by_unzr(person_dict, db_session)
+        return
 
 application = Application([PersonService],
     tns='spyne.examples.person',

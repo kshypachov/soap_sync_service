@@ -22,7 +22,7 @@ def get_person_by_params_from_db(params: dict, db_session):
     # створюємо запит до БД для отримання даних
     query = (
         select(
-            Person.id,
+            #Person.id,
             Person.name,
             Person.surname,
             Person.patronym,
