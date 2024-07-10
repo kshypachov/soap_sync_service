@@ -30,10 +30,10 @@ def update_person_by_unzr(person: dict, db_session):
 
         if result.rowcount == 0:
             logger.info("Дані для UNZR %s не змінилися", person.get("unzr"))
-            return f"Person with UNZR {person.get('unzr')} already up-to-date"
+            return f"Person with UNZR {person.get('unzr')} already up-to-date", result.rowcount
         else:
             logger.info("Дані для UNZR %s оновлено успішно", person.get("unzr"))
-            return f"Person with UNZR {person.get('unzr')} updated successfully"
+            return f"Person with UNZR {person.get('unzr')} updated successfully" , result.rowcount
 
     except Exception as e:
         db_session.rollback()

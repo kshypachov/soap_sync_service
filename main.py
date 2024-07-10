@@ -12,6 +12,7 @@ import utils.get_person
 import utils.validation
 import utils.delete_person
 import utils.update_person
+import utils.create_peson
 import databases
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -74,22 +75,34 @@ class PersonService(ServiceBase):
             raise Fault(faultcode="Server", faultstring=str(e))
         return f"Person with UNZR: {unzr} is deleted"
 
-    @rpc(models.person.SpynePersonModel, _returns=models.person.SpynePersonModel)
+    @rpc(models.person.SpynePersonModel, _returns=Unicode)
     def edit_person(ctx, person):
         #Валидация пришедших данных
         models.person.SpynePersonModel.validate(person)
 
         person_dict = person.__dict__.copy()
 
-        utils.update_person.update_person_by_unzr(person_dict, db_session)
+        try:
+            result_str, rowcount = utils.update_person.update_person_by_unzr(person_dict, db_session)
+            return result_str
+        except Exception as e:
+            return e
 
-        print(type(person))
-        print(person)
-        print(person_dict)
+    @rpc(models.person.SpynePersonModel, _returns=Unicode)
+    def create_person(ctx, person):
+        #Валидация пришедших данных
+        models.person.SpynePersonModel.validate(person)
 
-        # Вызываем функцию обновления данных
-        utils.update_person.update_person_by_unzr(person_dict, db_session)
-        return
+        person_dict = person.__dict__.copy()
+
+        try:
+            result_str = utils.create_peson.create_person(person_dict, db_session)
+            return result_str
+        except Exception as e:
+            logger.info(f"Сталась помилка підчас обродки запиту на створення запису у базі даних: {e}")
+            raise Fault(faultcode="Server", faultstring="Error")
+
+
 
 application = Application([PersonService],
     tns='spyne.examples.person',
@@ -105,6 +118,9 @@ if __name__ == '__main__':
 
     logging.basicConfig(level=logging.DEBUG)
     logging.getLogger('spyne.protocol.xml').setLevel(logging.DEBUG)
+    # Включаем логирование для SQLAlchemy
+    logging.basicConfig()
+    logging.getLogger('sqlalchemy.engine').setLevel(logging.DEBUG)
 
     server = make_server('127.0.0.1', 8000, wsgi_application)
     logging.info("listening to http://127.0.0.1:8000")

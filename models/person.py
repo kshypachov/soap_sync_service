@@ -22,14 +22,14 @@ class genderEnum(str, enum.Enum):
 class PersonModel(Base):
     __tablename__ = 'person'
     id = Column(SqlAlchemyInteger, primary_key=True, autoincrement=True)
-    name = Column(SqlAlchemyString(128))
-    surname = Column(SqlAlchemyString(128))
+    name = Column(SqlAlchemyString(128), nullable=False)
+    surname = Column(SqlAlchemyString(128), nullable=False)
     patronym = Column(SqlAlchemyString(128), nullable=True)
-    dateOfBirth = Column(Date)
-    gender = Column(sqlalchemy.Enum(genderEnum))
-    rnokpp = Column(SqlAlchemyString(10))
-    passportNumber = Column(SqlAlchemyString(9))
-    unzr = Column(SqlAlchemyString(14))
+    dateOfBirth = Column(Date, nullable=False)
+    gender = Column(sqlalchemy.Enum(genderEnum), nullable=False)
+    rnokpp = Column(SqlAlchemyString(10), unique=True, nullable=False)
+    passportNumber = Column(SqlAlchemyString(9), unique=True, nullable=False)
+    unzr = Column(SqlAlchemyString(14), unique=True, nullable=False)
 
 
 # Pydantic модель для валидации данных о человеке
