@@ -2,10 +2,10 @@ import logging
 from sqlalchemy import insert
 from sqlalchemy.exc import IntegrityError
 from models.person import PersonModel as Person
-from answer_structure import AnswerResult as Result
-
+from utils.answer_structure import AnswerResult as Result
 
 logger = logging.getLogger(__name__)
+
 
 def create_person(person_data: dict, db_session) -> Result:
     logger.info(f"Отримано дані для створення запису у базі даних: {person_data}")

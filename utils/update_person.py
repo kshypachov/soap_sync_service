@@ -1,6 +1,7 @@
 import logging
 from sqlalchemy import select, update
 from models.person import PersonModel as Person
+from utils.answer_structure import AnswerResult as Result
 
 logger = logging.getLogger(__name__)
 
@@ -33,11 +34,9 @@ def update_person_by_unzr(person: dict, db_session):
             return f"Person with UNZR {person.get('unzr')} already up-to-date", result.rowcount
         else:
             logger.info("Дані для UNZR %s оновлено успішно", person.get("unzr"))
-            return f"Person with UNZR {person.get('unzr')} updated successfully" , result.rowcount
+            return f"Person with UNZR {person.get('unzr')} updated successfully", result.rowcount
 
     except Exception as e:
         db_session.rollback()
         logger.error("Помилка під час оновлення даних: %s", e)
         raise ValueError(f"Failed to update person: {e}")
-
-

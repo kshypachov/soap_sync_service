@@ -30,13 +30,12 @@ except ValueError as e:
     exit(1)
 
 # створюємо об'єкт database, який буде використовуватися для виконання запитів
-#database = databases.Database(SQLALCHEMY_DATABASE_URL)
 
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
 Session = sessionmaker(bind=engine)
 db_session = Session()
 
-people = {}
+#people = {}
 from datetime import datetime
 class PersonService(ServiceBase):
     @rpc(models.search.SearchParams, _returns=Iterable(models.person.SpynePersonModel))
@@ -96,12 +95,18 @@ class PersonService(ServiceBase):
         person_dict = person.__dict__.copy()
 
         try:
-            result_str = utils.create_peson.create_person(person_dict, db_session)
-            return result_str
+            result = utils.create_peson.create_person(person_dict, db_session)
+            if result.code == 0:
+                return result.message
+            else:
+                raise Fault(faultcode="Server", faultstring=result.message)
+
+        except Fault as f:
+            raise f  # Перехватываем исключение Fault и сразу же его поднимаем
+
         except Exception as e:
             logger.info(f"Сталась помилка підчас обродки запиту на створення запису у базі даних: {e}")
             raise Fault(faultcode="Server", faultstring="Error")
-
 
 
 application = Application([PersonService],
