@@ -2,7 +2,7 @@
 
 # Змінні для конфігурації
 REPO_URL="https://github.com/kshypachov/soap_sync_service.git"
-PROJECT_DIR="soap_service_project"
+PROJECT_DIR="soap_sync_service"
 VENV_DIR="venv"
 DB_USER="your_db_user"
 DB_PASSWORD="your_db_password"
@@ -40,7 +40,7 @@ sudo mysql -e "FLUSH PRIVILEGES;"
 # Клонування репозиторію
 echo "Клонування репозиторію..."
 git clone $REPO_URL
-cd $PROJECT_DIR
+cd $PROJECT_DIR || exit
 
 # Створення та активація віртуального середовища
 echo "Створення та активація віртуального середовища..."
