@@ -73,7 +73,7 @@ project_root/
 1. Завантажте та запустіть скрипт для клонування репозиторію, встановлення залежностей та налаштування сервісу:
 
     ```bash
-    wget https://raw.githubusercontent.com/kshypachov/Soap_sync_service/master/deploy.sh
+    wget https://raw.githubusercontent.com/kshypachov/soap_sync_service/master/deploy.sh
     chmod +x deploy.sh
     ```
 
