@@ -2,11 +2,20 @@ from models.person import PersonModel as Person
 from sqlalchemy import select, and_, create_engine
 from sqlalchemy.orm import sessionmaker
 import logging
+from utils.answer_structure import AnswerResult as Result
 
 logger = logging.getLogger(__name__)
 
-def get_person_by_params_from_db(params: dict, db_session):
-    logger.info("Запит на отримання даних з параметрами: %s", params)
+
+def get_person_by_params_from_db(params: dict, db_session) -> Result:
+    """
+    Отримує запис про людину за параметрами.
+
+    :param params: Параметри пошуку запису.
+    :param db_session: Сесія бази даних.
+    :return: Результат операції у вигляді об'єкта Result.
+    """
+    logger.info(f"Запит на отримання даних з параметрами: {params}")
 
     # Створюємо список умов для пошуку
     conditions = []
@@ -15,14 +24,14 @@ def get_person_by_params_from_db(params: dict, db_session):
             column = getattr(Person, key)
             conditions.append(column == value)
 
+    # Перевіряємо, чи надані параметри для пошуку
     if not conditions:
         logger.warning("Не надано жодного параметра для пошуку")
-        raise ValueError("No search parameters provided")
+        return Result(Result.error, "Не надано жодного параметра для пошуку")
 
-    # створюємо запит до БД для отримання даних
+    # Створюємо запит до БД для отримання даних
     query = (
         select(
-            #Person.id,
             Person.name,
             Person.surname,
             Person.patronym,
@@ -37,15 +46,18 @@ def get_person_by_params_from_db(params: dict, db_session):
     )
 
     try:
-        person = db_session.execute(query).fetchall()
+        # Виконуємо запит на отримання даних
+        result = db_session.execute(query).fetchall()
 
-        if not person:
-            logger.warning("Запис з параметрами %s не знайдено", params)
-            raise ValueError("Person not found")
-
-        logger.info("Отримано дані наступного запису: %s", person)
-        return person
+        # Перевіряємо, чи знайдені записи
+        if not result:
+            logger.warning(f"Запис з параметрами {params} не знайдено")
+            return Result(Result.error, "Запис не знайдено")
+        else:
+            logger.info("Отримано дані наступного запису: %s", result)
+            return Result(Result.success, result)
 
     except Exception as e:
-        logger.error("Помилка під час виконання запиту на отримання даних: %s", e)
-        raise ValueError(f"Failed to retrieve person: {e}")
+        # Логування помилки під час виконання запиту
+        logger.error(f"Помилка під час виконання запиту на отримання даних: {e}")
+        return Result(Result.error, f"Помилка під час отримання даних.")

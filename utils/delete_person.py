@@ -2,36 +2,43 @@ import logging
 from sqlalchemy import delete
 from sqlalchemy.orm import Session
 from models.person import PersonModel as Person
+from utils.answer_structure import AnswerResult as Result
 
 logger = logging.getLogger(__name__)
 
-def delete_person_by_rnokpp(unzr: str, db_session: Session):
-    """
-    Удаляет запись о человеке по UNZR.
 
-    :param unzr: UNZR записи, которую необходимо удалить.
-    :param db_session: Сессия базы данных.
-    :return: Количество удалённых записей.
+def delete_person_by_unzr(unzr: str, db_session: Session):
     """
-    # Создаём запрос на удаление данных
+    Видаляє запис про людину за UNZR.
+
+    :param unzr: UNZR запису, який необхідно видалити.
+    :param db_session: Сесія бази даних.
+    :return: Результат операції у вигляді об'єкта Result.
+    """
+
+    logger.info(f"Отримано дані для видалення запису у базі даних з UNZR: {unzr}")
+
+    # Створюємо запит на видалення даних
     query = delete(Person).where(Person.unzr == unzr)
 
     try:
+        # Виконуємо запит на видалення
         result = db_session.execute(query)
-        db_session.commit()  # Подтверждаем изменения в базе данных
-        deleted_count = result.rowcount  # Количество удалённых записей
+        # Підтверджуємо зміни в базі даних
+        db_session.commit()
+        # Отримуємо кількість видалених записів
+        deleted_count = result.rowcount
     except Exception as e:
-        db_session.rollback()  # Откатываем изменения в случае ошибки
-        logger.error("Ошибка во время выполнения запроса на удаление: %s", e)
-        raise ValueError("Ошибка удаления")
+        # Відкочуємо зміни у разі непередбаченої помилки
+        db_session.rollback()
+        logger.error(f"Непередбачена помилка при видаленні запису з UNZR: {unzr}. Помилка: {e}")
+        return Result(Result.error, f"Сталась помилка при видаленні запису з UNZR: {unzr}")
 
-    try:
-        if deleted_count == 0:
-            logger.warning(f"Запись с UNZR {unzr} не найдена")
-            raise ValueError("Person not found")
+    # Перевіряємо, чи було видалено хоч один запис
+    if deleted_count == 0:
+        logger.warning(f"Запис з UNZR {unzr} не знайдено")
+        return Result(Result.error, f"Запис з UNZR: {unzr} не знайдено.")
+    else:
+        logger.info(f"Кількість видалених записів: {deleted_count}")
+        return Result(Result.success, f"Успішно видалено {deleted_count} запис(ів) з UNZR {unzr}.")
 
-        logger.info(f"Количество удалённых записей: {deleted_count}")
-        return deleted_count
-    except Exception as e:
-        logger.error("Ошибка во время выполнения запроса на удаление: %s", e)
-        raise ValueError(e)

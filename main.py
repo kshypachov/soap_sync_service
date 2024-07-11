@@ -18,6 +18,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 try:
+    # Завантаження конфігурації
     conf_obj = utils.config_utils.load_config('config.ini')
     # Налаштовуємо логування
     utils.config_utils.configure_logging(conf_obj)
@@ -29,30 +30,31 @@ except ValueError as e:
     logging.critical(f"Failed to load configuration: {e}")
     exit(1)
 
-# створюємо об'єкт database, який буде використовуватися для виконання запитів
-
+# Створюємо об'єкт database, який буде використовуватися для виконання запитів
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
 Session = sessionmaker(bind=engine)
 db_session = Session()
 
-#people = {}
-from datetime import datetime
+
 class PersonService(ServiceBase):
     @rpc(models.search.SearchParams, _returns=Iterable(models.person.SpynePersonModel))
     def get_person_by_parameter(ctx, params):
-        print(params)
+        # Логування параметрів запиту
+        logger.info("Запит на отримання даних з параметрами: %s", params)
+
         params_dict = {params.key: params.value}
 
         try:
+            # Валідація параметрів запиту
             utils.validation.validate_parameter(params.key, params.value, models.person.SpynePersonModel)
             result = utils.get_person.get_person_by_params_from_db(params_dict, db_session)
         except Exception as e:
-            raise Fault(faultcode="Server", faultstring=str(e))
+            logger.info(f"Сталась помилка під час обробки запиту на отримання даних з параметрами з бази даних: {e}")
+            raise Fault(faultcode="Server", faultstring="Неочікувана помилка")
 
-        # Преобразуем результат в список объектов SpynePersonModel
+        # Перетворення результату в список об'єктів SpynePersonModel
         persons = [
             models.person.SpynePersonModel(
-                #id=row.id,
                 name=row.name,
                 surname=row.surname,
                 patronym=row.patronym,
@@ -67,25 +69,43 @@ class PersonService(ServiceBase):
 
     @rpc(Unicode, _returns=Unicode)
     def delete_person_by_unzr(ctx, unzr):
+
         try:
+            # Валідація UNZR
             utils.validation.validate_parameter("unzr", unzr, models.person.SpynePersonModel)
-            utils.delete_person.delete_person_by_rnokpp(unzr, db_session)
+            result = utils.delete_person.delete_person_by_unzr(unzr, db_session)
+            if result.code == 0:
+                return result.message
+            else:
+                raise Fault(faultcode="Server", faultstring=result.message)
+
+        except Fault as f:
+            raise f  # Перехоплення та повторне підняття виключення Fault
+
         except Exception as e:
-            raise Fault(faultcode="Server", faultstring=str(e))
-        return f"Person with UNZR: {unzr} is deleted"
+            logger.info(f"Сталась помилка під час обробки запиту на видалення запису у базі даних: {e}")
+            raise Fault(faultcode="Server", faultstring="Неочікувана помилка")
 
     @rpc(models.person.SpynePersonModel, _returns=Unicode)
     def edit_person(ctx, person):
-        #Валидация пришедших данных
+        # Валідація надісланих даних
         models.person.SpynePersonModel.validate(person)
 
         person_dict = person.__dict__.copy()
 
         try:
-            result_str, rowcount = utils.update_person.update_person_by_unzr(person_dict, db_session)
-            return result_str
+            result = utils.update_person.update_person_by_unzr(person_dict, db_session)
+            if result.code == 0:
+                return result.message
+            else:
+                raise Fault(faultcode="Server", faultstring=result.message)
+
+        except Fault as f:
+            raise f  # Перехоплення та повторне підняття виключення Fault
+
         except Exception as e:
-            return e
+            logger.info(f"Сталась помилка під час обробки запиту на оновлення запису у базі даних: {e}")
+            raise Fault(faultcode="Server", faultstring="Неочікувана помилка")
 
     @rpc(models.person.SpynePersonModel, _returns=Unicode)
     def create_person(ctx, person):
@@ -105,8 +125,8 @@ class PersonService(ServiceBase):
             raise f  # Перехватываем исключение Fault и сразу же его поднимаем
 
         except Exception as e:
-            logger.info(f"Сталась помилка підчас обродки запиту на створення запису у базі даних: {e}")
-            raise Fault(faultcode="Server", faultstring="Error")
+            logger.info(f"Сталась помилка підчас обробки запиту на створення запису у базі даних: {e}")
+            raise Fault(faultcode="Server", faultstring="Неочікувана помилка")
 
 
 application = Application([PersonService],
