@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Змінні для конфігурації
-REPO_URL="https://github.com/kshypachov/Soap_sync_service.git"
+REPO_URL="https://github.com/kshypachov/soap_sync_service.git"
 PROJECT_DIR="soap_service_project"
 VENV_DIR="venv"
 DB_USER="your_db_user"
