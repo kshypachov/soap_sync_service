@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/Soap_sync_service.iml" filepath="$PROJECT_DIR$/.idea/Soap_sync_service.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/soap_sync_service.iml" filepath="$PROJECT_DIR$/.idea/soap_sync_service.iml" />
     </modules>
   </component>
 </project>
