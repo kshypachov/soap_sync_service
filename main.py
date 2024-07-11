@@ -23,6 +23,8 @@ try:
     logger.info("Configuration loaded")
     # Отримуємо URL бази даних
     SQLALCHEMY_DATABASE_URL = utils.config_utils.get_database_url(conf_obj)
+    service_host = utils.config_utils.get_config_param(conf_obj, 'service', 'host_interface')
+    service_port = utils.config_utils.get_config_param(conf_obj, 'service', 'port')
 except ValueError as e:
     logging.critical(f"Failed to load configuration: {e}")
     exit(1)
@@ -144,8 +146,8 @@ if __name__ == '__main__':
     logging.basicConfig()
     logging.getLogger('sqlalchemy.engine').setLevel(logging.DEBUG)
 
-    server = make_server('127.0.0.1', 8000, wsgi_application)
-    logging.info("listening to http://127.0.0.1:8000")
-    logging.info("wsdl is at: http://127.0.0.1:8000/?wsdl")
+    server = make_server(service_host,  int(service_port), wsgi_application)
+    logging.info(f"listening to http://{service_host}:{service_port}")
+    logging.info(f"wsdl is at: http://{service_host}:{service_port}/?wsdl")
 
     server.serve_forever()
