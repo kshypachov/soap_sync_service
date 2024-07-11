@@ -63,7 +63,7 @@ class PersonService(ServiceBase):
                 rnokpp=row.rnokpp,
                 passportNumber=row.passportNumber,
                 unzr=row.unzr
-            ) for row in result
+            ) for row in result.message
         ]
         return persons
 

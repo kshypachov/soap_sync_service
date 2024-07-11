@@ -25,7 +25,9 @@ def get_database_url(config: configparser.ConfigParser) -> str:
     db_password = get_config_param(config, 'database', 'password')
     db_host = get_config_param(config, 'database', 'host')
     db_name = get_config_param(config, 'database', 'name')
-    return f"mysql://{db_user}:{db_password}@{db_host}:3306/{db_name}"
+    db_type = get_config_param(config, 'database', 'type')
+    db_port = get_config_param(config, 'database', 'port')
+    return f"{db_type}://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
 
 
 # функція для налаштування логування
