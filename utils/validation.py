@@ -1,12 +1,9 @@
 import logging
-#from models.person import PersonGet
 from typing import Any
-from pydantic import BaseModel
-from spyne.model.fault import Fault
-from datetime import datetime
 
 # створюється екземпляр класу logger
 logger = logging.getLogger(__name__)
+
 
 def validate_parameter_name(param_name: str, validation_model: Any):
     logger.info(f"Validating parameter '{param_name}")
@@ -29,8 +26,4 @@ def validate_parameter(param_name: str, param_value: Any, validation_model: Any)
 
     # Пробуем валидировать объект
     validation_model.validate(temp_obj)
-    # try:
-    #
-    #     print(f"Validation of {param_name} passed!")
-    # except Fault as e:
-    #     print(f"Validation of {param_name} failed: {e}")
+

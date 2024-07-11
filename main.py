@@ -1,9 +1,7 @@
 import logging
-from spyne import Application, rpc, ServiceBase, Integer, Unicode, Iterable
+from spyne import Application, rpc, ServiceBase, Unicode, Iterable
 from spyne.protocol.soap import Soap11
 from spyne.server.wsgi import WsgiApplication
-from spyne.model.complex import ComplexModel
-from spyne.model.primitive import String
 from spyne.model.fault import Fault
 import models.person
 import models.search
@@ -13,7 +11,6 @@ import utils.validation
 import utils.delete_person
 import utils.update_person
 import utils.create_peson
-import databases
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 

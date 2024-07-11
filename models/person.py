@@ -1,7 +1,7 @@
 import sqlalchemy
 from datetime import date, datetime
 import re
-from pydantic import BaseModel, Field, validator
+#from pydantic import BaseModel, Field, validator
 from spyne import Application, rpc, ServiceBase, Integer, Unicode
 from spyne.model.fault import Fault
 from spyne.model.complex import ComplexModel
