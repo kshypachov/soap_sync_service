@@ -24,7 +24,7 @@ try:
     # Отримуємо URL бази даних
     SQLALCHEMY_DATABASE_URL = utils.config_utils.get_database_url(conf_obj)
     service_host = utils.config_utils.get_config_param(conf_obj, 'service', 'host_interface')
-    service_port = utils.config_utils.get_config_param(conf_obj, 'service', 'port')
+    service_port = utils.config_utils.get_config_param(conf_obj, 'service', 'service_port')
 except ValueError as e:
     logging.critical(f"Failed to load configuration: {e}")
     exit(1)
