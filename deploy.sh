@@ -10,7 +10,7 @@ DB_NAME="soap_service_db"
 DB_HOST="localhost"
 DB_PORT="3306"
 SERVICE_NAME="soap_service"
-APP_MODULE="main:app"  # Вкажіть правильний модуль додатку
+#APP_MODULE="main:app"  # Вкажіть правильний модуль додатку
 
 # Встановлення системних залежностей
 echo "Встановлення системних залежностей..."
