@@ -9,7 +9,7 @@ DB_PASSWORD="your_db_password"
 DB_NAME="soap_service_db"
 DB_HOST="localhost"
 DB_PORT="3306"
-SERVICE_NAME="soap_service"
+SERVICE_NAME="soap_sync_service"
 #APP_MODULE="main:app"  # Вкажіть правильний модуль додатку
 
 # Встановлення системних залежностей

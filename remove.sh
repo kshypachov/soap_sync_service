@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # Конфігураційні змінні
-PROJECT_DIR="soap_service_project"
-SERVICE_NAME="fastapi_trembita_service"
+PROJECT_DIR="soap_sync_service"
+SERVICE_NAME="soap_sync_service"
 VENV_DIR="venv"
 CONFIG_FILE="config.ini"
 
