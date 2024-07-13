@@ -11,20 +11,27 @@ import utils.validation
 import utils.delete_person
 import utils.update_person
 import utils.create_peson
+from utils.logging_headers import log_soap_headers
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+
+#from logging_tree import printout
+
 
 try:
     # Завантаження конфігурації
     conf_obj = utils.config_utils.load_config('config.ini')
+    service_host = utils.config_utils.get_config_param(conf_obj, 'service', 'host_interface')
+    service_port = utils.config_utils.get_config_param(conf_obj, 'service', 'service_port')
+
     # Налаштовуємо логування
     utils.config_utils.configure_logging(conf_obj)
     logger = logging.getLogger(__name__)
     logger.info("Configuration loaded")
+
     # Отримуємо URL бази даних
     SQLALCHEMY_DATABASE_URL = utils.config_utils.get_database_url(conf_obj)
-    service_host = utils.config_utils.get_config_param(conf_obj, 'service', 'host_interface')
-    service_port = utils.config_utils.get_config_param(conf_obj, 'service', 'service_port')
+
 except ValueError as e:
     logging.critical(f"Failed to load configuration: {e}")
     exit(1)
@@ -40,6 +47,8 @@ class PersonService(ServiceBase):
     def get_person_by_parameter(ctx, params):
         # Логування параметрів запиту
         logger.info("Запит на отримання даних з параметрами: %s", params)
+
+        log_soap_headers(ctx)
 
         params_dict = {params.key: params.value}
 
@@ -129,25 +138,21 @@ class PersonService(ServiceBase):
 
 
 application = Application([PersonService],
-    tns='spyne.examples.person',
-    in_protocol=Soap11(validator='lxml'),
-    out_protocol=Soap11()
-)
+                          tns='spyne.examples.person',
+                          in_protocol=Soap11(validator='lxml'),
+                          out_protocol=Soap11()
+                          )
 
 wsgi_application = WsgiApplication(application)
 
+
 if __name__ == '__main__':
-    import logging
     from wsgiref.simple_server import make_server
 
-    logging.basicConfig(level=logging.DEBUG)
-    logging.getLogger('spyne.protocol.xml').setLevel(logging.DEBUG)
-    # Включаем логирование для SQLAlchemy
-    logging.basicConfig()
-    logging.getLogger('sqlalchemy.engine').setLevel(logging.DEBUG)
-
-    server = make_server(service_host,  int(service_port), wsgi_application)
+    server = make_server(service_host, int(service_port), wsgi_application)
     logging.info(f"listening to http://{service_host}:{service_port}")
     logging.info(f"wsdl is at: http://{service_host}:{service_port}/?wsdl")
 
+    #from logging_tree import printout
+    #printout()
     server.serve_forever()

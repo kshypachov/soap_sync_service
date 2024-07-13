@@ -2,6 +2,8 @@ import configparser
 import os
 import logging
 
+
+
 # створюється екземпляр класу logger
 logger = logging.getLogger(__name__)
 
@@ -38,10 +40,17 @@ def configure_logging(config: configparser.ConfigParser):
     log_datefmt = get_config_param(config, 'logging', 'dateformat')
     log_level = get_config_param(config, 'logging', 'level').upper()
 
+    level = getattr(logging, log_level, logging.DEBUG)
     logging.basicConfig(
         filename=log_filename,
         filemode=log_filemode,
         format=log_format,
         datefmt=log_datefmt,
-        level=getattr(logging, log_level, logging.DEBUG)
+        level=level
     )
+
+    # Встановлення обраного рівня логування для усіх модулів
+    for logger_name in logging.root.manager.loggerDict:
+        logging.getLogger(logger_name).setLevel(level)
+
+
