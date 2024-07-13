@@ -55,19 +55,63 @@ project_root/
 
 ### Ручне встановлення
 
-1. Клонуйте репозиторій:
+1. Встановіть необхідні пакети:
     ```bash
-    git clone <URL-репозиторію>
+    sudo apt-get update
+    sudo apt-get install -y curl libmariadb-dev gcc python3 python3-venv python3-dev git pkg-config
     ```
-2. Встановіть залежності:
+2. Налаштуйте репозиторій MariaDB та встановіть СУБД MariaDB:
     ```bash
+   curl -sS https://downloads.mariadb.com/MariaDB/mariadb_repo_setup | sudo bash
+   sudo apt-get install -y mariadb-server libmysqlclient-dev libmariadb-dev
+   ```
+3. Запустіть СУБД MariaDB та налаштуйте атозапуск:
+    ```bash
+   sudo systemctl start mariadb
+   sudo systemctl enable mariadb
+   ```
+
+4. Створіть базу даних та користувача:
+   ```bash
+    sudo mysql -e "CREATE DATABASE IF NOT EXISTS [DB_NAME] CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+    sudo mysql -e "CREATE USER IF NOT EXISTS '[DB_USER]'@'%' IDENTIFIED BY '[DB_PASSWORD]';"
+    sudo mysql -e "GRANT ALL PRIVILEGES ON [DB_NAME].* TO '[DB_USER]'@'%';"
+    sudo mysql -e "FLUSH PRIVILEGES;"
+   ```
+
+5. Клонуйте репозиторій:
+    ```bash
+    git clone https://github.com/kshypachov/soap_sync_service.git
+    ```
+6. Перейдіть в папку з проектом:
+   ```bash
+   cd soap_sync_service
+   ```
+7. Відредагуйте конфігураційні файли `alembic.ini` та `config.ini` додавши відомості про створену БД та користувача БД. 
+8. Встановіть віртуалне середовище та активуйте його:
+   ```bash
+    python3 -m venv soap_sync_service
+    source soap_sync_service/bin/activate
+   ```
+9. Встановіть залежності:
+    ```bash
+    pip install --upgrade pip
     pip install -r requirements.txt
     ```
-3. Створіть файл конфігурації (наприклад, `config.ini`) з необхідними параметрами для підключення до бази даних та налаштування логування.
+10. Створіть структуру бд за допомогою alembic:
+    ```bash
+    alembic revision --autogenerate -m "Init migration"
+    alembic upgrade head
+    ```
+11. Запустіть сервіс за допомогою команди:
+    ```bash
+    python main.py
+    ```
 
 ## Встановлення за допомогою скрипта deploy.sh
 
-Ми додали скрипт `deploy.sh` для автоматизації процесу встановлення. Скрипт виконує наступні кроки:
+Ми додали скрипт `deploy.sh` для автоматизації процесу встановлення. Цей сценарій запустить додаток у однопоточному режимі за допомогою Python. Це простий варіант підходить для тестування та дуже детального дебагу
+Скрипт виконує наступні кроки:
 1. Встановлює системні залежності.
 2. Клонує репозиторій.
 3. Створює та активує віртуальне середовище.
@@ -91,6 +135,35 @@ project_root/
 
    ```bash
    ./deploy.sh
+   ```
+## Встановлення за допомогою скрипта deploy_by_gunicorn.sh
+Ми додали скрипт `deploy_by_gunicorn.sh` для автоматизації процесу встановлення. 
+Цей сценарій запустить додаток у багатопоточному режимі за допомогою WSGI серверу Gunicorn. 
+Це сценарій більше підходить для сервісів Трембіти, та є значно продуктивнішим рішенням.
+Скрипт виконує наступні кроки:
+1. Встановлює системні залежності.
+2. Клонує репозиторій.
+3. Створює та активує віртуальне середовище.
+4. Встановлює залежності Python.
+5. Налаштовує конфігурацію бази даних.
+6. Створює структуру бази даних за допомогою Alembic.
+7. Створює `systemd` сервіс для запуску застосунку.
+
+#### Використання скрипта deploy_by_gunicorn.sh
+
+1. Завантажте та запустіть скрипт для клонування репозиторію, встановлення залежностей та налаштування сервісу:
+
+    ```bash
+    wget https://raw.githubusercontent.com/kshypachov/soap_sync_service/master/deploy_by_gunicorn.sh
+    chmod +x deploy_by_gunicorn.sh
+    ```
+
+2. Відредагуйте скрипт `deploy_by_gunicorn.sh`, замінивши значення змінних `DB_USER`, `DB_PASSWORD`, `DB_NAME`, `DB_HOST` та `DB_PORT` на ваші реальні дані.
+
+3. Запустіть скрипт:
+
+   ```bash
+   ./deploy_by_gunicorn.sh
    ```
 
 ## Видалення
