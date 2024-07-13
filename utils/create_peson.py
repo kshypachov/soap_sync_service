@@ -3,8 +3,10 @@ from sqlalchemy import insert
 from sqlalchemy.exc import IntegrityError
 from models.person import PersonModel as Person
 from utils.answer_structure import AnswerResult as Result
+import utils.config_utils
 
 logger = logging.getLogger(__name__)
+
 
 def create_person(person_data: dict, db_session) -> Result:
     """

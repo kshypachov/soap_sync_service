@@ -1,5 +1,6 @@
 import logging
 from typing import Any
+import utils.config_utils
 
 # створюється екземпляр класу logger
 logger = logging.getLogger(__name__)

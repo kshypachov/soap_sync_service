@@ -3,6 +3,7 @@ from sqlalchemy import delete
 from sqlalchemy.orm import Session
 from models.person import PersonModel as Person
 from utils.answer_structure import AnswerResult as Result
+import utils.config_utils
 
 logger = logging.getLogger(__name__)
 

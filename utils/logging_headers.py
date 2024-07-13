@@ -1,4 +1,5 @@
 import logging
+import utils.config_utils
 
 # створюється екземпляр класу logger
 logger = logging.getLogger(__name__)

@@ -15,19 +15,26 @@ from utils.logging_headers import log_soap_headers
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-#from logging_tree import printout
-
 
 try:
+
     # Завантаження конфігурації
     conf_obj = utils.config_utils.load_config('config.ini')
+
+    #utils.config_utils.configure_logging_gunicorn(conf_obj)
+
     service_host = utils.config_utils.get_config_param(conf_obj, 'service', 'host_interface')
     service_port = utils.config_utils.get_config_param(conf_obj, 'service', 'service_port')
 
     # Налаштовуємо логування
-    utils.config_utils.configure_logging(conf_obj)
     logger = logging.getLogger(__name__)
     logger.info("Configuration loaded")
+
+    #utils.config_utils.copy_logger_settings(utils.config_utils.app_name)
+
+    # Встановлення обраного рівня логування для усіх модулів
+    for logger_name in logging.root.manager.loggerDict:
+        pass
 
     # Отримуємо URL бази даних
     SQLALCHEMY_DATABASE_URL = utils.config_utils.get_database_url(conf_obj)
@@ -145,14 +152,19 @@ application = Application([PersonService],
 
 wsgi_application = WsgiApplication(application)
 
-
+#цей блок коду виконується тільки при запуску за допомогою Python, без Gunicorn чи Unicorn чи іншого веб-сервера
 if __name__ == '__main__':
     from wsgiref.simple_server import make_server
 
+    #Конфігуруємо логування згідно параметрів у файлі кофігураці config.ini
+    utils.config_utils.configure_logging(conf_obj)
+
+    #Налаштовуємо адресу та порт для сервера
     server = make_server(service_host, int(service_port), wsgi_application)
     logging.info(f"listening to http://{service_host}:{service_port}")
     logging.info(f"wsdl is at: http://{service_host}:{service_port}/?wsdl")
 
     #from logging_tree import printout
     #printout()
+    #Старт сервера
     server.serve_forever()

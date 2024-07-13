@@ -2,6 +2,7 @@ import logging
 from sqlalchemy import select, update
 from models.person import PersonModel as Person
 from utils.answer_structure import AnswerResult as Result
+import utils.config_utils
 
 logger = logging.getLogger(__name__)
 
