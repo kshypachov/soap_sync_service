@@ -300,7 +300,7 @@ level = DEBUG
 - **[logging]**
   - `filename`: Шлях до файлу, в який будуть записуватися логи.
   - `filemode`: Режим роботи з файлом логів (`a` - додавання до існуючого файлу, `w` - перезапис існуючого файлу).
-  - `format`: Формат запису логів.
+  - `format`: Формат запису логів. (https://docs.python.org/3/library/logging.html#logrecord-attributes)
   - `dateformat`: Формат дати та часу в логах.
   - `level`: Рівень логування (DEBUG, INFO, WARNING, ERROR, CRITICAL).
 
