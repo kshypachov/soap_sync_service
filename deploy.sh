@@ -16,7 +16,22 @@ SERVICE_NAME="soap_sync_service"
 echo "Встановлення системних залежностей..."
 sudo apt update
 sudo apt upgrade -y
-sudo apt install -y curl libmariadb-dev gcc python3.10 python3-venv python3-dev git pkg-config
+
+# Масив з назвами пакетів
+packages=(curl libmariadb-dev gcc python3.10 python3.10-venv python3.10-dev git pkg-config)
+
+# Перевірка кожного пакету
+for pkg in "${packages[@]}"; do
+    if ! apt-cache show "$pkg" > /dev/null 2>&1; then
+        echo "Пакет $pkg не знайдено в репозиторії. Завершення скрипта."
+        exit 1
+    fi
+done
+
+echo "Усі пакети доступні в репозиторії."
+
+# Якщо всі пакети доступні, виконуємо встановлення пакетів за допомогою apt
+sudo apt install -y "${packages[@]}"
 
 # Налаштування репозиторію MariaDB
 echo "Налаштування репозиторію MariaDB..."
