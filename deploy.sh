@@ -62,7 +62,7 @@ cd $PROJECT_DIR || exit
 
 # Створення та активація віртуального середовища
 echo "Створення та активація віртуального середовища..."
-python3 -m venv $VENV_DIR
+python3.10 -m venv $VENV_DIR
 source $VENV_DIR/bin/activate   # Для Windows: venv\Scripts\activate
 
 # Встановлення залежностей Python
