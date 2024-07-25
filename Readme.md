@@ -5,7 +5,7 @@
 
 ## Вимоги
 
-- Python 3.10
+- Python 3.10 !!!
 - MariaDB 11+
 - Ubuntu Server 20.04+
 - Git
@@ -58,7 +58,7 @@ project_root/
 1. Встановіть необхідні пакети:
     ```bash
     sudo apt-get update
-    sudo apt-get install -y curl libmariadb-dev gcc python3 python3-venv python3-dev git pkg-config
+    sudo apt-get install -y curl libmariadb-dev gcc python3.10 python3.10-venv python3.10-dev git pkg-config
     ```
 2. Налаштуйте репозиторій MariaDB та встановіть СУБД MariaDB:
     ```bash
@@ -90,7 +90,7 @@ project_root/
 7. Відредагуйте конфігураційні файли `alembic.ini` та `config.ini` додавши відомості про створену БД та користувача БД. 
 8. Встановіть віртуалне середовище та активуйте його:
    ```bash
-    python3 -m venv soap_sync_service
+    python3.10 -m venv soap_sync_service
     source soap_sync_service/bin/activate
    ```
 9. Встановіть залежності:
