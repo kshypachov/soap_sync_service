@@ -12,13 +12,16 @@ DB_PORT="3306"
 SERVICE_NAME="soap_sync_service"
 #APP_MODULE="main:app"  # Вкажіть правильний модуль додатку
 
+# Використовуємо Python 3.10 тільки !!!
+PYTHON_VERSION=python3.10
+
 # Встановлення системних залежностей
 echo "Встановлення системних залежностей..."
 sudo apt update
 sudo apt upgrade -y
 
 # Масив з назвами пакетів
-packages=(curl libmariadb-dev gcc python3.10 python3.10-venv python3.10-dev git pkg-config)
+packages=(curl libmariadb-dev gcc ${PYTHON_VERSION} ${PYTHON_VERSION}-venv ${PYTHON_VERSION}-dev git pkg-config)
 
 # Перевірка кожного пакету
 for pkg in "${packages[@]}"; do
@@ -62,7 +65,7 @@ cd $PROJECT_DIR || exit
 
 # Створення та активація віртуального середовища
 echo "Створення та активація віртуального середовища..."
-python3.10 -m venv $VENV_DIR
+${PYTHON_VERSION} -m venv $VENV_DIR
 source $VENV_DIR/bin/activate   # Для Windows: venv\Scripts\activate
 
 # Встановлення залежностей Python
