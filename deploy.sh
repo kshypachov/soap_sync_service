@@ -16,7 +16,7 @@ SERVICE_NAME="soap_sync_service"
 echo "Встановлення системних залежностей..."
 sudo apt update
 sudo apt upgrade -y
-sudo apt install -y curl libmariadb-dev gcc python3 python3-venv python3-dev git pkg-config
+sudo apt install -y curl libmariadb-dev gcc python3.10 python3-venv python3-dev git pkg-config
 
 # Налаштування репозиторію MariaDB
 echo "Налаштування репозиторію MariaDB..."
