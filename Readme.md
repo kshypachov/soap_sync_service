@@ -5,9 +5,9 @@
 
 ## Вимоги
 
-- Python 3.10+
+- Python 3.10
 - MariaDB 11+
-- Ubuntu Server 20.04
+- Ubuntu Server 20.04+
 - Git
 
 
