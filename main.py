@@ -14,8 +14,8 @@ import utils.create_peson
 from utils.logging_headers import log_soap_headers
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy import event, text
-from sqlalchemy.exc import DisconnectionError, SQLAlchemyError
+# from sqlalchemy import event, text
+# from sqlalchemy.exc import DisconnectionError, SQLAlchemyError
 
 
 try:
