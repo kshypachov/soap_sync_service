@@ -14,8 +14,8 @@ import utils.create_peson
 from utils.logging_headers import log_soap_headers
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy import event
-from sqlalchemy.exc import DisconnectionError
+from sqlalchemy import event, text
+from sqlalchemy.exc import DisconnectionError, SQLAlchemyError
 
 
 try:
@@ -46,22 +46,7 @@ except ValueError as e:
     exit(1)
 
 # Створюємо об'єкт database, який буде використовуватися для виконання запитів
-engine = create_engine(SQLALCHEMY_DATABASE_URL)
-
-#Створюемо обробник подій для підключення до бази даних, обробник буде опрацьовувати події таймауту сессії до бази даних
-@event.listens_for(engine, "engine_connect")
-def ping_connection(connection, branch):
-    if branch:
-        return
-
-    try:
-        connection.scalar("SELECT 1")
-    except Exception as e:
-        if isinstance(e, DisconnectionError):
-            connection.invalidate()
-            connection.scalar("SELECT 1")
-        else:
-            raise
+engine = create_engine(SQLALCHEMY_DATABASE_URL, pool_pre_ping=True)
 
 # Создаем фабрику сессий
 Session = sessionmaker(bind=engine)
