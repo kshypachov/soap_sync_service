@@ -68,3 +68,35 @@ systemctl staus soap_sync_service
 ```bash
 systemctl staus soap_sync_service
 ```
+#### Конфігурація сервісу
+
+- Конфігурація сервісу зберігається у файлі `config.ini` :
+- Опис полів `config.ini` :
+
+```ini
+[database]
+# тип бази даних (mysql, postgres тощо)
+type = mysql
+# хост бази даних
+host = 10.0.20.242
+# порт бази даних
+port = 3306
+# ім'я бази даних
+name = soap
+# ім'я користувача бази даних
+username = soap
+# пароль до бази даних
+password = 1234
+
+[logging]
+# файл для запису логів
+filename = /tmp/file.log
+# режим роботи з файлом логів (a - додати, w - перезаписати)
+filemode = a
+# формат запису логів
+format = %(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s
+# формат дати і часу в логах
+dateformat = %H:%M:%S
+# рівень логування (DEBUG, INFO, WARNING, ERROR, CRITICAL)
+level = DEBUG
+```

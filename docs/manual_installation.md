@@ -55,6 +55,53 @@ cd soap_sync_service
 
 ### 7. Відредагуйте конфігураційні файли `alembic.ini` та `config.ini` додавши відомості про створену БД та користувача БД. 
 
+### Опис параметрів конфігураційного файлу
+
+- **[database]**
+  - `type`: Тип бази даних, який використовується (наприклад, mysql, postgres).
+  - `host`: Хост, на якому знаходиться база даних.
+  - `port`: Порт для підключення до бази даних.
+  - `name`: Назва бази даних.
+  - `username`: Ім'я користувача для підключення до бази даних.
+  - `password`: Пароль користувача для підключення до бази даних.
+
+- **[logging]**
+  - `filename`: Шлях до файлу, в який будуть записуватися логи.
+  - `filemode`: Режим роботи з файлом логів (`a` - додавання до існуючого файлу, `w` - перезапис існуючого файлу).
+  - `format`: Формат запису логів. (https://docs.python.org/3/library/logging.html#logrecord-attributes)
+  - `dateformat`: Формат дати та часу в логах.
+  - `level`: Рівень логування (DEBUG, INFO, WARNING, ERROR, CRITICAL).
+
+Приклад файлу конфігурації `config.ini`:
+
+```ini
+[database]
+# тип бази даних (mysql, postgres тощо)
+type = mysql
+# хост бази даних
+host = 10.0.20.242
+# порт бази даних
+port = 3306
+# ім'я бази даних
+name = soap
+# ім'я користувача бази даних
+username = soap
+# пароль до бази даних
+password = 1234
+
+[logging]
+# файл для запису логів
+filename = /tmp/file.log
+# режим роботи з файлом логів (a - додати, w - перезаписати)
+filemode = a
+# формат запису логів
+format = %(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s
+# формат дати і часу в логах
+dateformat = %H:%M:%S
+# рівень логування (DEBUG, INFO, WARNING, ERROR, CRITICAL)
+level = DEBUG
+```
+
 ### 8. Встановіть віртуалне середовище та активуйте його:
 ```bash
 python3.10 -m venv soap_sync_service
