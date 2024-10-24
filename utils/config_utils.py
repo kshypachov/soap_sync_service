@@ -122,8 +122,14 @@ def configure_logging_gunicorn(config: configparser.ConfigParser):
 
     level = getattr(logging, log_level, logging.DEBUG)
 
+    # Якщо log_filename пустий, то виводимо логи в консоль (stdout)
+    if not log_filename:
+        handler = logging.StreamHandler()  # Логируем в stdout
+    else:
+        # Створюемо обробник з ротацією логів
+        handler = RotatingFileHandler(filename=log_filename, mode=log_filemode, maxBytes=100000000, backupCount=10)
+
     # Создаем общий обработчик
-    handler = RotatingFileHandler(filename=log_filename, mode=log_filemode, maxBytes=100000000, backupCount=10)
     formatter = logging.Formatter(fmt=log_format, datefmt=log_datefmt)
     handler.setFormatter(formatter)
 

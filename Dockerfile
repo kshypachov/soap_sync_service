@@ -46,8 +46,8 @@ USER appuser
 COPY . .
 
 # Expose the port that the application listens on.
-#EXPOSE 8000
-EXPOSE ${PORT:-8000}
+EXPOSE 8000
+#EXPOSE ${PORT:-8000}
 
 # Run the application.
 CMD gunicorn -c  gunicorn_config.py main:wsgi_application

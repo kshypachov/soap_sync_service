@@ -25,8 +25,8 @@ try:
 
     #utils.config_utils.configure_logging_gunicorn(conf_obj)
 
-    service_host = utils.config_utils.get_config_param(conf_obj, 'service', 'host_interface')
-    service_port = utils.config_utils.get_config_param(conf_obj, 'service', 'service_port')
+    service_host = utils.config_utils.get_config_param(conf_obj, 'service', 'host_interface', 'SERVICE_HOST_INTERFACE', default='0.0.0.0')
+    service_port = utils.config_utils.get_config_param(conf_obj, 'service', 'service_port', 'SERVICE_PORT_INTERFACE', default='8080')
 
     # Налаштовуємо логування
     logger = logging.getLogger(__name__)
@@ -43,7 +43,7 @@ try:
 
 except ValueError as e:
     logging.critical(f"Failed to load configuration: {e}")
-    exit(1)
+    raise ValueError (f"Failed to load configuration: {e}")
 
 # Створюємо об'єкт database, який буде використовуватися для виконання запитів
 engine = create_engine(SQLALCHEMY_DATABASE_URL, pool_pre_ping=True)

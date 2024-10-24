@@ -2,6 +2,7 @@ import utils.config_utils
 import multiprocessing
 import logging
 from logging.handlers import RotatingFileHandler
+import os
 
 
 
@@ -9,8 +10,8 @@ try:
 
     # Завантаження конфігурації
     conf_obj = utils.config_utils.load_config('config.ini')
-    service_host = utils.config_utils.get_config_param(conf_obj, 'service', 'host_interface')
-    service_port = utils.config_utils.get_config_param(conf_obj, 'service', 'service_port')
+    service_host = utils.config_utils.get_config_param(conf_obj, 'service', 'host_interface', 'SERVICE_HOST_INTERFACE', default='0.0.0.0')
+    service_port = utils.config_utils.get_config_param(conf_obj, 'service', 'service_port', 'SERVICE_PORT_INTERFACE', default='8080')
 
 
 
@@ -25,8 +26,11 @@ try:
 
     def post_fork(server, worker):
         try:
-            config = utils.config_utils.load_config('config.ini')
-            utils.config_utils.configure_logging_gunicorn(config)
+            if os.getenv("USE_ENV_CONFIG", "false").lower() == "true":
+                utils.config_utils.configure_logging_gunicorn(None)
+            else:
+                config = utils.config_utils.load_config('config.ini')
+                utils.config_utils.configure_logging_gunicorn(config)
         except ValueError as e:
             logging.critical(f"Failed to load configuration: {e}")
             exit(1)
