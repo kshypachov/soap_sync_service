@@ -19,22 +19,36 @@
 
 ```
 project_root/
-├── utils/
-│   ├── validation.py
-│   ├── update_person.py
-│   ├── get_person.py
-│   ├── delete_person.py
-│   ├── create_peson.py
-│   ├── config_utils.py
-│   └── answer_structure.py
-├── models/
-│   ├── search.py
-│   └── person.py
-├── main.py
-├── config.ini
+├── Dockerfile
+├── README.Docker.md
+├── Readme.md
+├── alembic
 ├── alembic.ini
-├── alembic/
-└── Readme.md
+├── compose.yaml
+├── config.ini
+├── deploy.sh
+├── deploy_by_gunicorn.sh
+├── docs
+│         ├── https_nginx_reverse_proxy.md
+│         ├── manual_installation.md
+│         └── script_installation.md
+├── gunicorn_config.py
+├── main.py
+├── models
+│         ├── person.py
+│         └── search.py
+├── remove.sh
+├── requirements.txt
+└── utils
+    ├── answer_structure.py
+    ├── config_utils.py
+    ├── create_peson.py
+    ├── delete_person.py
+    ├── get_person.py
+    ├── logging_headers.py
+    ├── update_person.py
+    └── validation.py
+
 ```
 
 ### models
@@ -51,7 +65,43 @@ project_root/
 - `get_person.py`: Логіка отримання даних про людину за параметрами.
 - `update_person.py`: Логіка оновлення даних про людину за UNZR.
 
-## Встановлення
+## Розгортання
+
+- Для ручного розгортання дивіться [тут](./docs/manual_installation.md).
+- Для розгортання за допомогою скрипта дивіться [тут](./docs/script_installation.md).
+- Для розгортання у Docker дивіться [тут](./docs/docker_installation.md).
+- Для налаштування HTTPS зверніться до цієї інструкції [тут](./docs/https_nginx_reverse_proxy.md).
+
+## Видалення
+Ми додали скрипт `remove.sh` для автоматизації процесу видалення сервісу та очищення системи.
+Скрипт працює лише у випадку якщо проєкт було розгорнуто також за допомогою скрипту автоматичного розгортання.
+
+### Використання скрипта remove.sh
+
+1. Зробіть файл виконуваним:
+
+   ```bash
+   chmod +x remove.sh
+   ```
+
+2. Запустіть скрипт:
+
+   ```bash
+   ./remove.sh
+   ```
+
+Скрипт автоматично зупинить та видалить системний сервіс, видалить віртуальне середовище, клонований репозиторій та системні залежності. 
+
+
+## Внесок
+
+Якщо ви хочете зробити свій внесок у проєкт, будь ласка, створіть форк репозиторію і відправте Pull Request.
+
+## Ліцензія
+
+Цей проект ліцензується відповідно до умов MIT License.
+
+
 
 ### Ручне встановлення
 
@@ -179,81 +229,6 @@ chmod +x remove.sh
 ./remove.sh
 ```
 
-## Використання
-
-### Запуск сервісу
-
-1. Переконайтеся, що у вас налаштована база даних і файл конфігурації.
-2. Запустіть сервіс:
-    ```bash
-    python main.py
-    ```
-
-### Приклади використання
-
-- **Створення нової людини**
-    ```python
-    from utils.create_person import create_person
-    from sqlalchemy.orm import sessionmaker
-    from models.person import Base
-    from sqlalchemy import create_engine
-    from utils.config_utils import load_config, get_database_url
-
-    config = load_config('config.ini')
-    engine = create_engine(get_database_url(config))
-    Session = sessionmaker(bind=engine)
-    session = Session()
-
-    person_data = {
-        "name": "Тарас",
-        "surname": "Шевченко",
-        "patronym": "Григорович",
-        "dateOfBirth": "1814-03-09",
-        "gender": "male",
-        "rnokpp": "1234567890",
-        "passportNumber": "123456789",
-        "unzr": "18140309-12345"
-    }
-
-    result = create_person(person_data, session)
-    print(result.code, result.message)
-    ```
-
-- **Видалення людини за UNZR**
-    ```python
-    from utils.delete_person import delete_person_by_unzr
-
-    result = delete_person_by_unzr("18140309-12345", session)
-    print(result.code, result.message)
-    ```
-
-- **Отримання даних про людину за параметрами**
-    ```python
-    from utils.get_person import get_person_by_params_from_db
-
-    search_params = {"name": "Тарас"}
-    result = get_person_by_params_from_db(search_params, session)
-    print(result.code, result.message)
-    ```
-
-- **Оновлення даних про людину**
-    ```python
-    from utils.update_person import update_person_by_unzr
-
-    update_data = {
-        "name": "Тарас",
-        "surname": "Шевченко",
-        "patronym": "Григорович",
-        "dateOfBirth": "1814-03-09",
-        "gender": "male",
-        "rnokpp": "4444444444",
-        "passportNumber": "111111111",
-        "unzr": "18140309-12345"
-    }
-
-    result = update_person_by_unzr(update_data, session)
-    print(result.code, result.message)
-    ```
 
 ## Конфігурація
 

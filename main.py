@@ -8,14 +8,13 @@ import models.search
 import utils.config_utils
 import utils.get_person
 import utils.validation
+from utils.validation import TrSOARValidationERROR
 import utils.delete_person
 import utils.update_person
 import utils.create_peson
 from utils.logging_headers import log_soap_headers
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-# from sqlalchemy import event, text
-# from sqlalchemy.exc import DisconnectionError, SQLAlchemyError
 
 
 try:
@@ -25,8 +24,8 @@ try:
 
     #utils.config_utils.configure_logging_gunicorn(conf_obj)
 
-    service_host = utils.config_utils.get_config_param(conf_obj, 'service', 'host_interface')
-    service_port = utils.config_utils.get_config_param(conf_obj, 'service', 'service_port')
+    service_host = utils.config_utils.get_config_param(conf_obj, 'service', 'host_interface', 'SERVICE_HOST_INTERFACE', default='0.0.0.0')
+    service_port = utils.config_utils.get_config_param(conf_obj, 'service', 'service_port', 'SERVICE_PORT_INTERFACE', default='8080')
 
     # Налаштовуємо логування
     logger = logging.getLogger(__name__)
@@ -43,7 +42,7 @@ try:
 
 except ValueError as e:
     logging.critical(f"Failed to load configuration: {e}")
-    exit(1)
+    raise ValueError (f"Failed to load configuration: {e}")
 
 # Створюємо об'єкт database, який буде використовуватися для виконання запитів
 engine = create_engine(SQLALCHEMY_DATABASE_URL, pool_pre_ping=True)
@@ -57,7 +56,7 @@ class PersonService(ServiceBase):
     @rpc(models.search.SearchParams, _returns=Iterable(models.person.SpynePersonModel))
     def get_person_by_parameter(ctx, params):
         # Логування параметрів запиту
-        logger.info("Запит на отримання даних з параметрами: %s", params)
+        logger.info(f"Запит на отримання даних з параметрами: {params}")
 
         log_soap_headers(ctx)
 
@@ -66,10 +65,22 @@ class PersonService(ServiceBase):
         try:
             # Валідація параметрів запиту
             utils.validation.validate_parameter(params.key, params.value, models.person.SpynePersonModel)
+            # Виконання пошуку в базі даних
             result = utils.get_person.get_person_by_params_from_db(params_dict, db_session)
+
+            if result.code != 0 or not result.message:  # Перевірка на відсутність записів
+                logger.warning(f"Записів за параметрами {params} не знайдено.")
+                raise Fault(faultcode="Client", faultstring="Записів за заданими параметрами не знайдено.") # Fault з вказівкою помилки
+
+        except TrSOARValidationERROR as e:
+            raise Fault(faultcode="Client", faultstring=f"Помилка валідіції: {e} ")  # Fault з вказівкою помилки
+
+        except Fault as f:
+            raise f  # Перехоплення та повторне підняття виключення Fault
+
         except Exception as e:
             logger.info(f"Сталась помилка під час обробки запиту на отримання даних з параметрами з бази даних: {e}")
-            raise Fault(faultcode="Server", faultstring="Неочікувана помилка")
+            raise Fault(faultcode="Server", faultstring="Неочікувана помилка серверу")
 
         # Перетворення результату в список об'єктів SpynePersonModel
         persons = [
@@ -96,10 +107,14 @@ class PersonService(ServiceBase):
             if result.code == 0:
                 return result.message
             else:
-                raise Fault(faultcode="Server", faultstring=result.message)
+                logger.error(f"Виникла помилка серверу під час видалення: {result.message}")
+                raise Fault(faultcode="Server", faultstring=f"Виникла помилка серверу під час видалення: {result.message}")
+
+        except TrSOARValidationERROR as e:
+            raise Fault(faultcode="Client", faultstring=f"Помилка валідіції: {e} ")  # Fault з вказівкою помилки
 
         except Fault as f:
-            raise f  # Перехоплення та повторне підняття виключення Fault
+             raise f  # Перехоплення та повторне підняття виключення Fault
 
         except Exception as e:
             logger.info(f"Сталась помилка під час обробки запиту на видалення запису у базі даних: {e}")
