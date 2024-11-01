@@ -1,7 +1,6 @@
 import utils.config_utils
 import multiprocessing
 import logging
-from logging.handlers import RotatingFileHandler
 import os
 
 
@@ -16,13 +15,8 @@ try:
 
 
     bind = f'{service_host}:{service_port}'
-    workers = 4
+    workers = multiprocessing.cpu_count() * 2 + 1
     timeout = 120
-
-    #accesslog = 'gunicorn_access.log'
-    #errorlog = 'gunicorn_error.log'
-    #loglevel = 'info'
-
 
     def post_fork(server, worker):
         try:

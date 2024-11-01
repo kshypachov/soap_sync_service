@@ -1,6 +1,6 @@
 from typing import Any
 
-
+# модель відповіді
 class AnswerResult:
     error = -1
     success = 0

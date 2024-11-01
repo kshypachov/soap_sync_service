@@ -1,5 +1,4 @@
 import logging
-import utils.config_utils
 
 # створюється екземпляр класу logger
 logger = logging.getLogger(__name__)
@@ -10,7 +9,7 @@ def log_element(element, indent=0):
     indent = indent + 1
     indent_str = "  " * indent
 
-    tag = element.tag.split('}')[-1]  # Убираем пространство имен
+    tag = element.tag.split('}')[-1]  # Прибираємо простір імен
     text = element.text.strip() if element.text else ''
     logger.info(f"{indent_str}Tag: {tag}, Text: {text}")
 

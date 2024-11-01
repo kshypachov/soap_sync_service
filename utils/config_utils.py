@@ -3,8 +3,6 @@ import os
 import logging
 from logging.handlers import RotatingFileHandler
 
-#app_name = "soap_service"
-
 # створюється екземпляр класу logger
 logger = logging.getLogger(__name__)
 
@@ -27,15 +25,15 @@ def load_config(file_path: str, defaults: dict = None) -> configparser.ConfigPar
 
 # функція для отримання значення параметрів з конфіг файлу за їх ім'ям
 def get_config_param(config: configparser.ConfigParser, section: str, param: str, env_var: str = None, default: str = None) -> str:
-    # Если используется только переменные окружения
+    # Якщо використовуються тільки змінні оточення
     if os.getenv("USE_ENV_CONFIG", "false").lower() == "true":
         env_value = os.getenv(env_var)
         if env_var and env_value is not None:
             return env_value
         else:
-            return default  # Возвращаем default, если переменной окружения нет
+            return default  # Вертаємо default, якщо змінної оточення немає
 
-    # Если используется конфигурационный файл
+    # Якщо використовується тільки конфігураційний файл
     if config.has_option(section, param):
         return config.get(section, param)
     else:
@@ -99,7 +97,7 @@ def configure_logging(config: configparser.ConfigParser):
     for logger_name in logging.root.manager.loggerDict:
         logging.getLogger(logger_name).setLevel(level)
 
-
+# Копіювання налаштувань логування в усі логери проєкту
 def copy_logger_settings(source_logger_name):
     source_logger = logging.getLogger(source_logger_name)
     handlers = source_logger.handlers
@@ -112,7 +110,7 @@ def copy_logger_settings(source_logger_name):
                 if not any(isinstance(h, type(handler)) for h in logger.handlers):
                     logger.addHandler(handler)
 
-
+# Налаштування логування у випадку якщо використовується guvicorn
 def configure_logging_gunicorn(config: configparser.ConfigParser):
     log_filename = get_config_param(config, 'logging', 'filename', 'LOG_FILENAME', default=None)
     log_filemode = get_config_param(config, 'logging', 'filemode', 'LOG_FILEMODE', default=None)
@@ -129,18 +127,17 @@ def configure_logging_gunicorn(config: configparser.ConfigParser):
         # Створюемо обробник з ротацією логів
         handler = RotatingFileHandler(filename=log_filename, mode=log_filemode, maxBytes=100000000, backupCount=10)
 
-    # Создаем общий обработчик
+    # Створюємо загальний обробник логів
     formatter = logging.Formatter(fmt=log_format, datefmt=log_datefmt)
     handler.setFormatter(formatter)
 
-    # Применить настройки логирования ко всем логгерам
+    # Застосовуємо налаштування до усіх логерів в проєкті
     for logger_name in logging.root.manager.loggerDict:
         logger = logging.getLogger(logger_name)
         logger.setLevel(level)
-        logger.handlers.clear()  # Очищаем существующие обработчики
+        logger.handlers.clear()
         logger.addHandler(handler)
 
-    # Настроить основной логгер
     logger_obj = logging.getLogger(__name__)
     logger_obj.setLevel(level)
     logger_obj.info("Configuration loaded by Gunicorn")

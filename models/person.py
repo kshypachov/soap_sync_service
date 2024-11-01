@@ -1,19 +1,13 @@
 import sqlalchemy
 from datetime import date, datetime
 import re
-#from pydantic import BaseModel, Field, validator
-from spyne import Application, rpc, ServiceBase, Integer, Unicode
-from spyne.model.fault import Fault
-from spyne.model.complex import ComplexModel
-from spyne.protocol.soap import Soap11
-from spyne.server.wsgi import WsgiApplication
 from sqlalchemy import create_engine, Column, Integer as SqlAlchemyInteger, String as SqlAlchemyString, Date
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
-from spyne.model.enum import Enum
 import enum
+from utils.validation import TrSOARValidationERROR
 
-# SQLAlchemy модель для представления данных о человеке
+
+# SQLAlchemy модель для представлення даних про людину
 Base = declarative_base()
 
 class genderEnum(str, enum.Enum):
@@ -32,10 +26,9 @@ class PersonModel(Base):
     unzr = Column(SqlAlchemyString(14), unique=True, nullable=False)
 
 
-# Pydantic модель для валидации данных о человеке
-
 from spyne import ComplexModel, Integer, Date, Unicode, String
-# Spyne модель для представления данных о человеке с валидацией
+
+# Spyne модель для представлення даних про людину з валідацією
 class SpynePersonModel(ComplexModel):
     #id = Integer
     name = Unicode(min_len=1, max_len=128)
@@ -45,16 +38,25 @@ class SpynePersonModel(ComplexModel):
     gender = Unicode(values=['male', 'female'])
     rnokpp = Unicode(min_len=10, max_len=10)#, pattern='^\d{10}$')
     passportNumber = Unicode(min_len=9, max_len=9)#, pattern='^\d{9}$')
-    #unzr = Unicode(pattern=r'^\d{8}-\d{5}$')
     unzr = Unicode(min_len=14, max_len=14)
 
     @classmethod
     def validate(cls, obj):
         errors = []
 
+        # валідація номера паспорта
+        if obj.passportNumber:
+            if not (obj.passportNumber.isdigit() or re.match(r'^[А-Я]{2} \d{6}$', obj.passportNumber)):
+                errors.append(f'passportNubmer value {obj.passportNumber} is not valid, passportNum must be a 9 digit number or follow the format "AA 123456" with Cyrillic letters and 6 digits')
+
+        # Валідацію коду РНОКПП
+        if obj.rnokpp:
+            if not obj.rnokpp.isdigit():
+                errors.append(f'rnokpp value {obj.rnokpp} is not valid, rnokpp should contain only digits')
+
         # Валидация поля dateOfBirth
         if obj.dateOfBirth and obj.dateOfBirth > date.today():
-            errors.append('dateOfBirth cannot be in the future')
+            errors.append(f'dateOfBirth {obj.dateOfBirth} value is not valid, cannot be in the future')
 
         # Валидация поля name, surname и patronym
         for field in ['name', 'surname', 'patronym']:
@@ -84,5 +86,5 @@ class SpynePersonModel(ComplexModel):
                     errors.append('Invalid control digit in UNZR')
 
         if errors:
-            raise ValueError(errors)
+            raise TrSOARValidationERROR(errors)
 

@@ -1,9 +1,9 @@
 from models.person import PersonModel as Person
-from sqlalchemy import select, and_, create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy import select, and_
+
 import logging
 from utils.answer_structure import AnswerResult as Result
-import utils.config_utils
+
 
 logger = logging.getLogger(__name__)
 

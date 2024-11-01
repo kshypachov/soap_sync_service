@@ -9,6 +9,7 @@
 1. [Вимоги](#вимоги)
 2. [Змінні оточення](#змінні-оточення)
 3. [Як зібрати Docker-образ](#як-зібрати-docker-образ)
+4. [Як створити базу даних для сервісу](#як-створити-базу-даних-для-сервісу)
 4. [Як запустити контейнер](#як-запустити-контейнер)
 5. [Перегляд логів](#перегляд-логів)
 6. [Використання змінних оточення для конфігурації](#використання-змінних-оточення-для-конфігурації)
@@ -45,6 +46,43 @@ docker build -t my-soap-app .
 ```
 
 Ця команда створить Docker-образ з іменем `my-fastapi-app`, використовуючи Dockerfile, який знаходиться в поточній директорії.
+
+## Як створити базу даних для сервісу
+Хоча контейнер і має у своєму складі компонент alembic котрий може створювати структуру бази даних, але його запуск з контейнера не є зручним.
+Саме тому пропонується створити базу даних та її структуру вручну.
+
+Виконайте команди на сервері баз даних:
+```bash
+# Створення бази даних, якщо вона не існує
+sudo mysql -e "CREATE DATABASE IF NOT EXISTS [DB_NAME] CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+
+# Створення користувача, якщо він не існує
+sudo mysql -e "CREATE USER IF NOT EXISTS '[DB_USER]'@'%' IDENTIFIED BY '[DB_PASSWORD]';"
+
+# Призначення всіх привілеїв користувачеві на базу даних
+sudo mysql -e "GRANT ALL PRIVILEGES ON [DB_NAME].* TO '[DB_USER]'@'%';"
+
+# Оновлення привілеїв
+sudo mysql -e "FLUSH PRIVILEGES;"
+
+# Створення структури таблиці `person`
+sudo mysql -e "USE [DB_NAME]; CREATE TABLE IF NOT EXISTS \`person\` (
+  \`id\` int(11) NOT NULL AUTO_INCREMENT,
+  \`name\` varchar(128) DEFAULT NULL,
+  \`surname\` varchar(128) DEFAULT NULL,
+  \`patronym\` varchar(128) DEFAULT NULL,
+  \`dateOfBirth\` date DEFAULT NULL,
+  \`gender\` enum('male','female') DEFAULT NULL,
+  \`rnokpp\` varchar(10) DEFAULT NULL,
+  \`passportNumber\` varchar(9) DEFAULT NULL,
+  \`unzr\` varchar(14) DEFAULT NULL,
+  PRIMARY KEY (\`id\`),
+  UNIQUE KEY \`unzr\` (\`unzr\`),
+  UNIQUE KEY \`passportNumber\` (\`passportNumber\`),
+  UNIQUE KEY \`rnokpp\` (\`rnokpp\`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;"
+```
+Ці команди створять базу даних необхідної структури. 
 
 ## Як запустити контейнер
 
