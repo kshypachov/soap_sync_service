@@ -84,5 +84,5 @@ class SpynePersonModel(ComplexModel):
                     errors.append('Invalid control digit in UNZR')
 
         if errors:
-            raise Fault(faultcode="Client", faultstring=", ".join(errors))
+            raise ValueError(errors)
 

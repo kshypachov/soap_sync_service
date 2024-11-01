@@ -61,4 +61,4 @@ def get_person_by_params_from_db(params: dict, db_session) -> Result:
     except Exception as e:
         # Логування помилки під час виконання запиту
         logger.error(f"Помилка під час виконання запиту на отримання даних: {e}")
-        return Result(Result.error, f"Помилка під час отримання даних.")
+        raise e
