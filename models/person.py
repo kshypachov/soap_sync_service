@@ -1,16 +1,8 @@
 import sqlalchemy
 from datetime import date, datetime
 import re
-#from pydantic import BaseModel, Field, validator
-from spyne import Application, rpc, ServiceBase, Integer, Unicode
-from spyne.model.fault import Fault
-from spyne.model.complex import ComplexModel
-from spyne.protocol.soap import Soap11
-from spyne.server.wsgi import WsgiApplication
 from sqlalchemy import create_engine, Column, Integer as SqlAlchemyInteger, String as SqlAlchemyString, Date
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
-from spyne.model.enum import Enum
 import enum
 from utils.validation import TrSOARValidationERROR
 
@@ -46,16 +38,23 @@ class SpynePersonModel(ComplexModel):
     gender = Unicode(values=['male', 'female'])
     rnokpp = Unicode(min_len=10, max_len=10)#, pattern='^\d{10}$')
     passportNumber = Unicode(min_len=9, max_len=9)#, pattern='^\d{9}$')
-    #unzr = Unicode(pattern=r'^\d{8}-\d{5}$')
     unzr = Unicode(min_len=14, max_len=14)
 
     @classmethod
     def validate(cls, obj):
         errors = []
 
+        if obj.passportNumber:
+            if not (obj.passportNumber.isdigit() or re.match(r'^[А-Я]{2} \d{6}$', obj.passportNumber)):
+                errors.append(f'passportNubmer value {obj.passportNumber} is not valid, passportNum must be a 9 digit number or follow the format "AA 123456" with Cyrillic letters and 6 digits')
+
+        if obj.rnokpp:
+            if not obj.rnokpp.isdigit():
+                errors.append(f'rnokpp value {obj.rnokpp} is not valid, rnokpp should contain only digits')
+
         # Валидация поля dateOfBirth
         if obj.dateOfBirth and obj.dateOfBirth > date.today():
-            errors.append('dateOfBirth cannot be in the future')
+            errors.append(f'dateOfBirth {obj.dateOfBirth} value is not valid, cannot be in the future')
 
         # Валидация поля name, surname и patronym
         for field in ['name', 'surname', 'patronym']:

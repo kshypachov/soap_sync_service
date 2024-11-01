@@ -73,7 +73,7 @@ class PersonService(ServiceBase):
                 raise Fault(faultcode="Client", faultstring="Записів за заданими параметрами не знайдено.") # Fault з вказівкою помилки
 
         except TrSOARValidationERROR as e:
-            logger.error()
+            logger.error(f"")
             raise Fault(faultcode="Client", faultstring=f"Помилка валідіції: {e} ")  # Fault з вказівкою помилки
 
         except Fault as f:
@@ -100,7 +100,7 @@ class PersonService(ServiceBase):
 
     @rpc(Unicode, _returns=Unicode)
     def delete_person_by_unzr(ctx, unzr):
-        logger.info()
+        logger.info(f"")
         try:
             # Валідація UNZR
             utils.validation.validate_parameter("unzr", unzr, models.person.SpynePersonModel)
@@ -112,7 +112,7 @@ class PersonService(ServiceBase):
                 raise Fault(faultcode="Client", faultstring=result.message)
 
         except TrSOARValidationERROR as e:
-            logger.error()
+            logger.error(f"")
             raise Fault(faultcode="Client", faultstring=f"Помилка валідіції: {e} ")  # Fault з вказівкою помилки
 
         except Fault as f:
@@ -124,7 +124,7 @@ class PersonService(ServiceBase):
 
     @rpc(models.person.SpynePersonModel, _returns=Unicode)
     def edit_person(ctx, person):
-        logger.info()
+        logger.info(f"")
         # Валідація надісланих даних
         try:
             models.person.SpynePersonModel.validate(person)
@@ -142,7 +142,7 @@ class PersonService(ServiceBase):
             if result.code == 0:
                 return result.message
             else:
-                logger.error()
+                logger.error(f"")
                 raise Fault(faultcode="Server", faultstring=result.message)
 
         except Fault as f:
@@ -154,7 +154,7 @@ class PersonService(ServiceBase):
 
     @rpc(models.person.SpynePersonModel, _returns=Unicode)
     def create_person(ctx, person):
-        logger.info()
+        logger.info(f"")
         # Валідація надісланих даних
         try:
             models.person.SpynePersonModel.validate(person)
