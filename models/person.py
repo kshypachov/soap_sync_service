@@ -6,7 +6,8 @@ from sqlalchemy.ext.declarative import declarative_base
 import enum
 from utils.validation import TrSOARValidationERROR
 
-# SQLAlchemy модель для представления данных о человеке
+
+# SQLAlchemy модель для представлення даних про людину
 Base = declarative_base()
 
 class genderEnum(str, enum.Enum):
@@ -25,10 +26,9 @@ class PersonModel(Base):
     unzr = Column(SqlAlchemyString(14), unique=True, nullable=False)
 
 
-# Pydantic модель для валидации данных о человеке
-
 from spyne import ComplexModel, Integer, Date, Unicode, String
-# Spyne модель для представления данных о человеке с валидацией
+
+# Spyne модель для представлення даних про людину з валідацією
 class SpynePersonModel(ComplexModel):
     #id = Integer
     name = Unicode(min_len=1, max_len=128)
@@ -44,10 +44,12 @@ class SpynePersonModel(ComplexModel):
     def validate(cls, obj):
         errors = []
 
+        # валідація номера паспорта
         if obj.passportNumber:
             if not (obj.passportNumber.isdigit() or re.match(r'^[А-Я]{2} \d{6}$', obj.passportNumber)):
                 errors.append(f'passportNubmer value {obj.passportNumber} is not valid, passportNum must be a 9 digit number or follow the format "AA 123456" with Cyrillic letters and 6 digits')
 
+        # Валідацію коду РНОКПП
         if obj.rnokpp:
             if not obj.rnokpp.isdigit():
                 errors.append(f'rnokpp value {obj.rnokpp} is not valid, rnokpp should contain only digits')
