@@ -12,6 +12,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from spyne.model.enum import Enum
 import enum
+from utils.validation import TrSOARValidationERROR
 
 # SQLAlchemy модель для представления данных о человеке
 Base = declarative_base()
@@ -84,5 +85,5 @@ class SpynePersonModel(ComplexModel):
                     errors.append('Invalid control digit in UNZR')
 
         if errors:
-            raise ValueError(errors)
+            raise TrSOARValidationERROR(errors)
 

@@ -73,13 +73,14 @@ class PersonService(ServiceBase):
                 raise Fault(faultcode="Client", faultstring="Записів за заданими параметрами не знайдено.") # Fault з вказівкою помилки
 
         except TrSOARValidationERROR as e:
+            logger.error()
             raise Fault(faultcode="Client", faultstring=f"Помилка валідіції: {e} ")  # Fault з вказівкою помилки
 
         except Fault as f:
             raise f  # Перехоплення та повторне підняття виключення Fault
 
         except Exception as e:
-            logger.info(f"Сталась помилка під час обробки запиту на отримання даних з параметрами з бази даних: {e}")
+            logger.error(f"Сталась помилка під час обробки запиту на отримання даних з параметрами з бази даних: {e}")
             raise Fault(faultcode="Server", faultstring="Неочікувана помилка серверу")
 
         # Перетворення результату в список об'єктів SpynePersonModel
@@ -99,7 +100,7 @@ class PersonService(ServiceBase):
 
     @rpc(Unicode, _returns=Unicode)
     def delete_person_by_unzr(ctx, unzr):
-
+        logger.info()
         try:
             # Валідація UNZR
             utils.validation.validate_parameter("unzr", unzr, models.person.SpynePersonModel)
@@ -108,22 +109,31 @@ class PersonService(ServiceBase):
                 return result.message
             else:
                 logger.error(f"Виникла помилка серверу під час видалення: {result.message}")
-                raise Fault(faultcode="Server", faultstring=f"Виникла помилка серверу під час видалення: {result.message}")
+                raise Fault(faultcode="Client", faultstring=result.message)
 
         except TrSOARValidationERROR as e:
+            logger.error()
             raise Fault(faultcode="Client", faultstring=f"Помилка валідіції: {e} ")  # Fault з вказівкою помилки
 
         except Fault as f:
              raise f  # Перехоплення та повторне підняття виключення Fault
 
         except Exception as e:
-            logger.info(f"Сталась помилка під час обробки запиту на видалення запису у базі даних: {e}")
+            logger.error(f"Сталась помилка під час обробки запиту на видалення запису у базі даних: {e}")
             raise Fault(faultcode="Server", faultstring="Неочікувана помилка")
 
     @rpc(models.person.SpynePersonModel, _returns=Unicode)
     def edit_person(ctx, person):
+        logger.info()
         # Валідація надісланих даних
-        models.person.SpynePersonModel.validate(person)
+        try:
+            models.person.SpynePersonModel.validate(person)
+        except TrSOARValidationERROR as e:
+            logger.error(f"")
+            raise Fault(faultcode="Client", faultstring=f"Помилка валідіції: {e} ")  # Fault з вказівкою помилки
+        except Exception as e:
+            logger.error(f"")
+            raise Fault(faultcode="Server", faultstring="Неочікувана помилка")
 
         person_dict = person.__dict__.copy()
 
@@ -132,19 +142,29 @@ class PersonService(ServiceBase):
             if result.code == 0:
                 return result.message
             else:
+                logger.error()
                 raise Fault(faultcode="Server", faultstring=result.message)
 
         except Fault as f:
             raise f  # Перехоплення та повторне підняття виключення Fault
 
         except Exception as e:
-            logger.info(f"Сталась помилка під час обробки запиту на оновлення запису у базі даних: {e}")
+            logger.error(f"Сталась помилка під час обробки запиту на оновлення запису у базі даних: {e}")
             raise Fault(faultcode="Server", faultstring="Неочікувана помилка")
 
     @rpc(models.person.SpynePersonModel, _returns=Unicode)
     def create_person(ctx, person):
-        #Валидация пришедших данных
-        models.person.SpynePersonModel.validate(person)
+        logger.info()
+        # Валідація надісланих даних
+        try:
+            models.person.SpynePersonModel.validate(person)
+        except TrSOARValidationERROR as e:
+            logger.error(f"")
+            raise Fault(faultcode="Client", faultstring=f"Помилка валідіції: {e} ")  # Fault з вказівкою помилки
+        except Exception as e:
+            logger.error(f"")
+            raise Fault(faultcode="Server", faultstring="Неочікувана помилка")
+
 
         person_dict = person.__dict__.copy()
 
@@ -153,14 +173,17 @@ class PersonService(ServiceBase):
             if result.code == 0:
                 return result.message
             else:
+                logger.error(f"")
                 raise Fault(faultcode="Server", faultstring=result.message)
 
         except Fault as f:
             raise f  # Перехватываем исключение Fault и сразу же его поднимаем
 
         except Exception as e:
-            logger.info(f"Сталась помилка підчас обробки запиту на створення запису у базі даних: {e}")
+            logger.error(f"Сталась помилка підчас обробки запиту на створення запису у базі даних: {e}")
             raise Fault(faultcode="Server", faultstring="Неочікувана помилка")
+
+
 
 
 application = Application([PersonService],
