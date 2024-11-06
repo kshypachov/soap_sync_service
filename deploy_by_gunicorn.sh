@@ -9,9 +9,9 @@ VENV_DIR="venv"
 DB_USER="your_db_user"
 DB_PASSWORD="your_db_password"
 DB_NAME="soap_service_db"
-DB_HOST="localhost"
+DB_HOST="127.0.0.1"
 DB_PORT="3306"
-SERVICE_NAME="soap_sync_service"
+SERVICE_NAME="soap_sync_service_guvicorn"
 #APP_MODULE="main:app"  # Вкажіть правильний модуль додатку
 
 # Використовуємо Python 3.10 тільки !!!
@@ -19,8 +19,24 @@ PYTHON_VERSION=python3.10
 
 # Встановлення системних залежностей
 echo "Встановлення системних залежностей..."
-sudo apt-get update
-sudo apt-get install -y curl libmariadb-dev gcc ${PYTHON_VERSION} ${PYTHON_VERSION}-venv ${PYTHON_VERSION}-dev git pkg-config
+sudo apt update
+sudo apt upgrade -y
+
+# Масив з назвами пакетів
+packages=(curl libmariadb-dev gcc ${PYTHON_VERSION} ${PYTHON_VERSION}-venv ${PYTHON_VERSION}-dev git pkg-config)
+
+# Перевірка кожного пакету
+for pkg in "${packages[@]}"; do
+    if ! apt-cache show "$pkg" > /dev/null 2>&1; then
+        echo "Пакет $pkg не знайдено в репозиторії. Завершення скрипта."
+        exit 1
+    fi
+done
+
+echo "Усі пакети доступні в репозиторії."
+
+# Якщо всі пакети доступні, виконуємо встановлення пакетів за допомогою apt
+sudo apt install -y "${packages[@]}"
 
 # Налаштування репозиторію MariaDB
 echo "Налаштування репозиторію MariaDB..."
@@ -28,7 +44,9 @@ curl -sS https://downloads.mariadb.com/MariaDB/mariadb_repo_setup | sudo bash
 
 # Встановлення MariaDB сервера
 echo "Встановлення MariaDB сервера..."
-sudo apt-get install -y mariadb-server libmysqlclient-dev libmariadb-dev
+sudo apt install -y mariadb-server
+sudo apt install -y libmysqlclient-dev
+sudo apt install -y libmariadb-dev
 
 # Запуск та налаштування MariaDB
 echo "Запуск та налаштування MariaDB..."
@@ -75,7 +93,7 @@ alembic upgrade head
 echo "Створення unit файлу для systemd..."
 sudo bash -c "cat > /etc/systemd/system/$SERVICE_NAME.service" << EOL
 [Unit]
-Description=SOAP Service
+Description=SOAP Service by Guvicorn
 After=network.target
 
 [Service]
