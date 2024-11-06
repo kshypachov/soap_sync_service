@@ -19,14 +19,17 @@
 
 ```bash
 sudo apt-get update
-sudo apt-get install -y curl libmariadb-dev gcc python3.10 python3.10-venv python3.10-dev git pkg-config
+sudo apt upgrade -y
+sudo apt install -y curl libmariadb-dev gcc python3.10 python3.10-venv python3.10-dev git pkg-config
 ```
 - Примітка: Якщо версія Python вище 3.10, сервіс працювати не буде. Інші пакети необхідні для коректної роботи з базою даних та репозиторієм.
 
 ### 2. Налаштуйте репозиторій MariaDB та встановіть СУБД MariaDB:
 ```bash
 curl -sS https://downloads.mariadb.com/MariaDB/mariadb_repo_setup | sudo bash
-sudo apt-get install -y mariadb-server libmysqlclient-dev libmariadb-dev
+sudo apt install -y mariadb-server
+sudo apt install -y libmysqlclient-dev
+sudo apt install -y libmariadb-dev
 ```
 
 ### 3. Запустіть СУБД MariaDB та налаштуйте атозапуск:
@@ -54,6 +57,22 @@ cd soap_sync_service
 ```
 
 ### 7. Відредагуйте конфігураційні файли `alembic.ini` та `config.ini` додавши відомості про створену БД та користувача БД. 
+
+- У файлі alembic.ini відредагуйте рядок:
+  ```ini
+  sqlalchemy.url = mariadb+mariadbconnector://user:pass@localhost/dbname
+  ```
+
+  - У файлі `config.ini` відредагуйте секцію `[database]`:
+  ```ini
+  type = mysql
+  host = your_db_host
+  port = your_db_port
+  name = your_db_name
+  username = your_db_user
+  password = your_db_password
+  ```
+
 
 ### Опис параметрів конфігураційного файлу
 
