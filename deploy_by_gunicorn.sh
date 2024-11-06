@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 # Змінні для конфігурації
 REPO_URL="https://github.com/kshypachov/soap_sync_service.git"
 PROJECT_DIR="soap_sync_service"
