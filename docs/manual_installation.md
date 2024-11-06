@@ -63,7 +63,7 @@ cd soap_sync_service
   sqlalchemy.url = mariadb+mariadbconnector://user:pass@localhost/dbname
   ```
 
-  - У файлі `config.ini` відредагуйте секцію `[database]`:
+- У файлі `config.ini` відредагуйте секцію `[database]`:
   ```ini
   type = mysql
   host = your_db_host
