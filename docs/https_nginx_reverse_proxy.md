@@ -28,9 +28,9 @@ Nginx буде виступати посередником між клієнто
     ```
 
 2. Створіть новий файл конфігурації для REST сервісу. Наприклад, `soap_service`:
-```bash
-sudo nano /etc/nginx/sites-available/soap_service
-```
+    ```bash
+    sudo nano /etc/nginx/sites-available/soap_service
+    ```
 3. Додайте наступну конфігурацію для reverse proxy:
     ```nginx
     server {
