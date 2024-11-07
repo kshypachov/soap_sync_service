@@ -27,7 +27,7 @@ Nginx буде виступати посередником між клієнто
     cd /etc/nginx/sites-available
     ```
 
-2. Створіть новий файл конфігурації для REST сервісу. Наприклад, `soap_service`:
+2. Створіть новий файл конфігурації для SOAP сервісу. Наприклад, `soap_service`:
     ```bash
     sudo nano /etc/nginx/sites-available/soap_service
     ```
@@ -64,7 +64,7 @@ Nginx буде виступати посередником між клієнто
     ```
 4. Створіть символічне посилання на конфігурацію в папці `sites-enabled`:
     ```bash
-    sudo ln -s /etc/nginx/sites-available/rest_service /etc/nginx/sites-enabled/
+    sudo ln -s /etc/nginx/sites-available/soap_service /etc/nginx/sites-enabled/
     ```   
 
 5. Переконайтеся, що символічне посилання створено коректно:
