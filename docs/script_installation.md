@@ -39,7 +39,7 @@ sudo apt update
    
 4. Перевірте стан сервісу:
 ```bash
-systemctl staus soap_sync_service
+systemctl status soap_sync_service
 ```
 
 ## Встановлення за допомогою скрипта deploy_by_gunicorn.sh
@@ -74,7 +74,7 @@ systemctl staus soap_sync_service
    
 4. Перевірте стан сервісу:
 ```bash
-systemctl staus soap_sync_service
+systemctl status soap_sync_service_guvicorn
 ```
 #### Конфігурація сервісу
 
