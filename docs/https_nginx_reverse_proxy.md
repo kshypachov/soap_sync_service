@@ -27,10 +27,10 @@ Nginx буде виступати посередником між клієнто
     cd /etc/nginx/sites-available
     ```
 
-2. Створіть новий файл конфігурації для REST сервісу. Наприклад, `rest_service`:
-    ```bash
-    sudo nano /etc/nginx/sites-available/rest_service
-    ```
+2. Створіть новий файл конфігурації для REST сервісу. Наприклад, `soap_service`:
+```bash
+sudo nano /etc/nginx/sites-available/soap_service
+```
 3. Додайте наступну конфігурацію для reverse proxy:
     ```nginx
     server {
@@ -71,15 +71,19 @@ Nginx буде виступати посередником між клієнто
     ```bash
     ls -l /etc/nginx/sites-enabled/
     ```
+6. Видаліть символічне посилання на файл ```default``` яке зноходиться у директорії ```/etc/nginx/sites-enabled```
+   ```bash
+   sudo rm /etc/nginx/sites-enabled/default
+   ```
 
 ## Генерація самопідписаного SSL сертифіката
 
 Згенеруйте SSL сертифікат і приватний ключ:
-    ```bash
-    sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/ssl/private/nginx-selfsigned.key -out /etc/ssl/certs/nginx-selfsigned.crt
-    ```
+```bash
+sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/ssl/private/nginx-selfsigned.key -out /etc/ssl/certs/nginx-selfsigned.crt
+```
 
-    Під час генерації вам буде запропоновано ввести деякі дані (наприклад, країну, організацію, домен). Для тестових цілей можете ввести будь-які значення.
+Під час генерації вам буде запропоновано ввести деякі дані (наприклад, країну, організацію, домен). Для тестових цілей можете ввести будь-які значення.
 
 ## Перевірка конфігурації
 Щоб переконатися, що конфігурація Nginx правильна, виконайте команду:
