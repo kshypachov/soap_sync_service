@@ -15,7 +15,7 @@ import utils.create_peson
 from utils.logging_headers import log_soap_headers
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-
+from contextlib import contextmanager
 
 try:
 
@@ -45,8 +45,19 @@ engine = create_engine(SQLALCHEMY_DATABASE_URL, pool_pre_ping=True)
 
 # Створюємо фабрику сесій
 Session = sessionmaker(bind=engine)
-db_session = Session()
+#db_session = Session()
 
+@contextmanager
+def get_db_session():
+    """Контекстний менеджер для створення та закриття сесій бази даних."""
+    session = Session()
+    try:
+        yield session
+    except Exception as e:
+        session.rollback()  # Відкат транзакції при помиці
+        raise e
+    finally:
+        session.close()  # Закриття сесії
 
 class PersonService(ServiceBase):
     @rpc(models.search.SearchParams, _returns=Iterable(models.person.SpynePersonModel))
@@ -61,12 +72,13 @@ class PersonService(ServiceBase):
         try:
             # Валідація параметрів запиту
             utils.validation.validate_parameter(params.key, params.value, models.person.SpynePersonModel)
-            # Виконання пошуку в базі даних
-            result = utils.get_person.get_person_by_params_from_db(params_dict, db_session)
-            # Перевірка на відсутність записів
-            if result.code != 0 or not result.message:
-                logger.warning(f"Записів за параметрами {params} не знайдено.")
-                raise Fault(faultcode="Client", faultstring="Записів за заданими параметрами не знайдено.") # Fault з вказівкою помилки
+            with get_db_session() as db_session:
+                # Виконання пошуку в базі даних
+                result = utils.get_person.get_person_by_params_from_db(params_dict, db_session)
+                # Перевірка на відсутність записів
+                if result.code != 0 or not result.message:
+                    logger.warning(f"Записів за параметрами {params} не знайдено.")
+                    raise Fault(faultcode="Client", faultstring="Записів за заданими параметрами не знайдено.") # Fault з вказівкою помилки
 
         except TrSOARValidationERROR as e:
             logger.error(f"Помилка валідації параметрів: {e}")
@@ -100,13 +112,14 @@ class PersonService(ServiceBase):
         try:
             # Валідація UNZR
             utils.validation.validate_parameter("unzr", unzr, models.person.SpynePersonModel)
-            # Виконання запиту на видалення
-            result = utils.delete_person.delete_person_by_unzr(unzr, db_session)
-            if result.code == 0:
-                return result.message
-            else:
-                logger.error(f"Виникла помилка серверу під час видалення: {result.message}")
-                raise Fault(faultcode="Client", faultstring=result.message)
+            with get_db_session() as db_session:
+                # Виконання запиту на видалення
+                result = utils.delete_person.delete_person_by_unzr(unzr, db_session)
+                if result.code == 0:
+                    return result.message
+                else:
+                    logger.error(f"Виникла помилка серверу під час видалення: {result.message}")
+                    raise Fault(faultcode="Client", faultstring=result.message)
 
         except TrSOARValidationERROR as e:
             logger.error(f"Помилка валідації UNZR: {e}")
@@ -137,13 +150,14 @@ class PersonService(ServiceBase):
         person_dict = person.__dict__.copy()
 
         try:
-            # Виконання запиту до БД
-            result = utils.update_person.update_person_by_unzr(person_dict, db_session)
-            if result.code == 0:
-                return result.message
-            else:
-                logger.error(f"Сталась помилка при оновленні запису: {result.message}")
-                raise Fault(faultcode="Server", faultstring=result.message)
+            with get_db_session() as db_session:
+                # Виконання запиту до БД
+                result = utils.update_person.update_person_by_unzr(person_dict, db_session)
+                if result.code == 0:
+                    return result.message
+                else:
+                    logger.error(f"Сталась помилка при оновленні запису: {result.message}")
+                    raise Fault(faultcode="Server", faultstring=result.message)
 
         except Fault as f:
             raise f  # Перехоплення та повторне підняття виключення Fault
@@ -171,13 +185,14 @@ class PersonService(ServiceBase):
         person_dict = person.__dict__.copy()
 
         try:
-            # Виконання запиту до БД
-            result = utils.create_peson.create_person(person_dict, db_session)
-            if result.code == 0:
-                return result.message
-            else:
-                logger.error(f"Сталась помилка при створенні запису: {result.message}")
-                raise Fault(faultcode="Server", faultstring=result.message)
+            with get_db_session() as db_session:
+                # Виконання запиту до БД
+                result = utils.create_peson.create_person(person_dict, db_session)
+                if result.code == 0:
+                    return result.message
+                else:
+                    logger.error(f"Сталась помилка при створенні запису: {result.message}")
+                    raise Fault(faultcode="Server", faultstring=result.message)
 
         except Fault as f:
             raise f  # Перехоплення та повторне підняття виключення Fault
