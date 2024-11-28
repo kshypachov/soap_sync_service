@@ -44,7 +44,7 @@ class SpynePersonModel(ComplexModel):
     def validate(cls, obj):
         errors = []
 
-        # валідація номера паспорта
+        # Валідація номера паспорта
         if obj.passportNumber:
             if not (obj.passportNumber.isdigit() or re.match(r'^[А-Я]{2} \d{6}$', obj.passportNumber)):
                 errors.append(f'passportNubmer value {obj.passportNumber} is not valid, passportNum must be a 9 digit number or follow the format "AA 123456" with Cyrillic letters and 6 digits')
@@ -54,17 +54,17 @@ class SpynePersonModel(ComplexModel):
             if not obj.rnokpp.isdigit():
                 errors.append(f'rnokpp value {obj.rnokpp} is not valid, rnokpp should contain only digits')
 
-        # Валидация поля dateOfBirth
+        # Валідація поля dateOfBirth
         if obj.dateOfBirth and obj.dateOfBirth > date.today():
             errors.append(f'dateOfBirth {obj.dateOfBirth} value is not valid, cannot be in the future')
 
-        # Валидация поля name, surname и patronym
+        # Валідація поля name, surname и patronym
         for field in ['name', 'surname', 'patronym']:
             value = getattr(obj, field)
             if value and not all(char.isalpha() for char in value):
                 errors.append(f'{field} must contain only alphabetic characters without space')
 
-        # Валидация поля unzr
+        # Валідація поля unzr
         if obj.unzr:
             match = re.match(r'^\d{8}-\d{5}$', obj.unzr)
             if not match:

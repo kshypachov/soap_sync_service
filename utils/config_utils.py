@@ -23,7 +23,7 @@ def load_config(file_path: str, defaults: dict = None) -> configparser.ConfigPar
     return config
 
 
-# функція для отримання значення параметрів з конфіг файлу за їх ім'ям
+# функція для отримання значення параметрів з конфіг файлу чи змінних оточення за їх ім'ям
 def get_config_param(config: configparser.ConfigParser, section: str, param: str, env_var: str = None, default: str = None) -> str:
     # Якщо використовуються тільки змінні оточення
     if os.getenv("USE_ENV_CONFIG", "false").lower() == "true":
@@ -80,7 +80,7 @@ def configure_logging(config: configparser.ConfigParser):
     log_datefmt = get_config_param(config, 'logging', 'dateformat' , 'LOG_DATE_FORMAT', default=None)
     log_level = get_config_param(config, 'logging', 'level', 'LOG_LEVEL', default="info").upper()
 
-    # Якщо log_filename пустий, то виводимо логи в консоль (stdout)
+    # Якщо log_filename пустий, то виводимо логи в консоль (stdout), це необхідно для Docker
     if not log_filename:
         log_filename = None
 
