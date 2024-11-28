@@ -54,7 +54,8 @@ def get_db_session():
     try:
         yield session
     except Exception as e:
-        session.rollback()  # Відкат транзакції при помиці
+        session.rollback()  # Відкат транзакції при помилці
+        logging.critical(f"Помилка при отриманні сесії бази даних: {e}")
         raise e
     finally:
         session.close()  # Закриття сесії
