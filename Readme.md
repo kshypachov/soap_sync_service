@@ -19,35 +19,35 @@
 
 ```
 project_root/
-├── Dockerfile
-├── README.Docker.md
-├── Readme.md
-├── alembic
-├── alembic.ini
+├── Dockerfile                                    # Файл для розгорнатя додатку у Докер
+├── README.Docker.md                              # Документація
+├── Readme.md                                     # Документація
+├── alembic                                       # Службова директорія для керування моделями БД
+├── alembic.ini                                   # Конфігураційний файл системи керування моделями БД Alembic
 ├── compose.yaml
-├── config.ini
-├── deploy.sh
-├── deploy_by_gunicorn.sh
+├── config.ini                                    # Конфігураційний файл додатку
+├── deploy.sh                                     # Скрипт автоматичного розгортання (спрощенний варіант)
+├── deploy_by_gunicorn.sh                         # Скрипт автоматичного розгортання (продакшн варіант)
 ├── docs
-│         ├── https_nginx_reverse_proxy.md
-│         ├── manual_installation.md
-│         └── script_installation.md
-├── gunicorn_config.py
-├── main.py
+│         ├── https_nginx_reverse_proxy.md        # Документація
+│         ├── manual_installation.md              # Документація
+│         └── script_installation.md              # Документація
+├── gunicorn_config.py                            # Файл конфігурації WSGI сервера gunicorn. Використовується якщо додаток розгорнуто за допомогою deploy_by_gunicorn.sh
+├── main.py                                       # Точка входу у додаток
 ├── models
-│         ├── person.py
-│         └── search.py
-├── remove.sh
-├── requirements.txt
+│         ├── person.py                           # SQLAlchemy модель даних про людину
+│         └── search.py                           # Модель параметрів пошуку.
+├── remove.sh                                     # Скрипт автоматичного видалення
+├── requirements.txt                              # Файл залежностей додатку
 └── utils
-    ├── answer_structure.py
-    ├── config_utils.py
-    ├── create_peson.py
-    ├── delete_person.py
-    ├── get_person.py
-    ├── logging_headers.py
-    ├── update_person.py
-    └── validation.py
+    ├── answer_structure.py                       # Клас для структури відповіді.
+    ├── config_utils.py                           # Утиліти для роботи з конфігураційними файлами та логуванням.
+    ├── create_peson.py                           # Логіка створення нової персони в базі даних.
+    ├── delete_person.py                          # Логіка видалення запису про людину за UNZR.
+    ├── get_person.py                             # Логіка отримання даних про людину за параметрами.
+    ├── logging_headers.py                        # Утиліти логування загогловків
+    ├── update_person.py                          # Логіка оновлення даних про людину за UNZR
+    └── validation.py                             # Утиліти валідації
 
 ```
 
