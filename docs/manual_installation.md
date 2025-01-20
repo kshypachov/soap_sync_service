@@ -139,7 +139,31 @@ alembic revision --autogenerate -m "Init migration"
 alembic upgrade head
 ```
 
-### 11. Запустіть сервіс за допомогою команди:
+### 11. Створіть systemd файл:
 ```bash
-python main.py
+sudo bash -c "cat > /etc/systemd/system/soap_sync_service_gunicorn.service" << EOL
+[Unit]
+Description=SOAP Service by Guvicorn
+After=network.target
+
+[Service]
+User=$USER
+WorkingDirectory=$PWD
+ExecStart=$PWD/$VENV_DIR/bin/gunicorn -c  gunicorn_config.py main:wsgi_application
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
+EOL
+```
+
+### 12. Перезавантажте systemd
+```bash
+sudo systemctl daemon-reload
+```
+
+### 13. Запустіть сервіс за допомогою команди:
+```bash
+sudo systemctl start soap_sync_service_gunicorn
 ```
