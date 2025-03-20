@@ -1,147 +1,150 @@
-# Посібник з встановлення сервісу вручну
+# Інсталяція вебсервісу вручну
 
-## Опис 
-Цей посібник допоможе пройти процесс встановлення сервісу вручну. Для почтаку потрібно мати чисту систему Ubuntu, 
-всі необхідні пакети та репозиторії будуть підключені пізніше.
+Також існує можливість встановлення вебсервісу вручну, без застосування скрипта.
 
-## Загальні вимоги
+Для початку роботи потрібно мати чисту систему Ubuntu, всі необхідні пакети та репозиторії будуть підключені в ході виконання встановлення.
 
-- Python 3.10 !!!
-- MariaDB 11+
-- Ubuntu Server 20.04+
-- Git
+**Для того, щоб встановити даний вебсервіс вручну необхідно:**
 
-## Встановлення сервісу
+### 1. Додати репозиторій з Python3.10:
 
-### 1. Встановлення залежностей
-Для початку потрібно встановити всі необхідні пакети. Виконайте наступні команди для встановлення Python 3.10 
-і супутніх інструментів:
+```bash
+sudo add-apt-repository ppa:deadsnakes/ppa
+```
+
+### 2. Встановити необхідні пакети:
 
 ```bash
 sudo apt-get update
 sudo apt upgrade -y
 sudo apt install -y curl libmariadb-dev gcc python3.10 python3.10-venv python3.10-dev git pkg-config
 ```
-- Примітка: Якщо версія Python вище 3.10, сервіс працювати не буде. Інші пакети необхідні для коректної роботи з базою даних та репозиторієм.
+**Важливо!** Якщо версія Python нижче 3.10, сервіс працювати не буде.
 
-### 2. Налаштуйте репозиторій MariaDB та встановіть СУБД MariaDB:
+### 3. Додати репозиторій MariaDB
+
 ```bash
-curl -sS https://downloads.mariadb.com/MariaDB/mariadb_repo_setup | sudo bash
+curl -LsS https://r.mariadb.com/downloads/mariadb_repo_setup | sudo bash
+```
+
+### 4. Встановити СУБД MariaDB:
+
+```bash
 sudo apt install -y mariadb-server
 sudo apt install -y libmysqlclient-dev
 sudo apt install -y libmariadb-dev
 ```
+### 5. Запустити MariaDB та налаштувати автозапуск:
 
-### 3. Запустіть СУБД MariaDB та налаштуйте атозапуск:
 ```bash
 sudo systemctl start mariadb
 sudo systemctl enable mariadb
 ```
 
-### 4. Створіть базу даних та користувача:
+### 6. Перевірити чи працює MariaDB:
+
 ```bash
-sudo mysql -e "CREATE DATABASE IF NOT EXISTS [DB_NAME] CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
-sudo mysql -e "CREATE USER IF NOT EXISTS '[DB_USER]'@'%' IDENTIFIED BY '[DB_PASSWORD]';"
-sudo mysql -e "GRANT ALL PRIVILEGES ON [DB_NAME].* TO '[DB_USER]'@'%';"
-sudo mysql -e "FLUSH PRIVILEGES;"
+sudo systemctl status mariadb
 ```
 
-### 5. Клонуйте репозиторій:
+**Примітка**. Якщо базу даних запущено, можна переходити до виконання наступних кроків. Інакше – потрібно перевірити чи не було допущено помилку при виконанні одного з попередніх кроків.
+
+### 7. Створити базу даних та користувача. Для цього необхідно:
+
+7.1. Увійти в консоль MariaDB:
+
 ```bash
-git clone https://github.com/kshypachov/soap_sync_service.git
+sudo mysql
 ```
 
-### 6. Перейдіть в папку з проектом:
+7.2. Створити базу даних:
+
 ```bash
-cd soap_sync_service
+CREATE DATABASE IF NOT EXISTS your_db_name CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 ```
 
-### 7. Відредагуйте конфігураційні файли `alembic.ini` та `config.ini` додавши відомості про створену БД та користувача БД. 
+де: `your_db_name` – бажана назва БД.
 
-- У файлі alembic.ini відредагуйте рядок:
-  ```ini
-  sqlalchemy.url = mariadb+mariadbconnector://user:pass@localhost/dbname
-  ```
+7.3. Створити користувача:
 
-- У файлі `config.ini` відредагуйте секцію `[database]`:
-  ```ini
-  type = mysql
-  host = your_db_host
-  port = your_db_port
-  name = your_db_name
-  username = your_db_user
-  password = your_db_password
-  ```
-
-
-### Опис параметрів конфігураційного файлу
-
-- **[database]**
-  - `type`: Тип бази даних, який використовується (наприклад, mysql, postgres).
-  - `host`: Хост, на якому знаходиться база даних.
-  - `port`: Порт для підключення до бази даних.
-  - `name`: Назва бази даних.
-  - `username`: Ім'я користувача для підключення до бази даних.
-  - `password`: Пароль користувача для підключення до бази даних.
-
-- **[logging]**
-  - `filename`: Шлях до файлу, в який будуть записуватися логи.
-  - `filemode`: Режим роботи з файлом логів (`a` - додавання до існуючого файлу, `w` - перезапис існуючого файлу).
-  - `format`: Формат запису логів. (https://docs.python.org/3/library/logging.html#logrecord-attributes)
-  - `dateformat`: Формат дати та часу в логах.
-  - `level`: Рівень логування (DEBUG, INFO, WARNING, ERROR, CRITICAL).
-
-Приклад файлу конфігурації `config.ini`:
-
-```ini
-[database]
-# тип бази даних (mysql, postgres тощо)
-type = mysql
-# хост бази даних
-host = 10.0.20.242
-# порт бази даних
-port = 3306
-# ім'я бази даних
-name = soap
-# ім'я користувача бази даних
-username = soap
-# пароль до бази даних
-password = 1234
-
-[logging]
-# файл для запису логів
-filename = /tmp/file.log
-# режим роботи з файлом логів (a - додати, w - перезаписати)
-filemode = a
-# формат запису логів
-format = %(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s
-# формат дати і часу в логах
-dateformat = %H:%M:%S
-# рівень логування (DEBUG, INFO, WARNING, ERROR, CRITICAL)
-level = DEBUG
+```bash
+CREATE USER IF NOT EXISTS 'your_db_user'@'%' IDENTIFIED BY 'your_db_password';
 ```
 
-### 8. Встановіть віртуалне середовище та активуйте його:
+де:
+
+- `your_db_user` – логін користувача БД;
+
+- `your_db_password` – пароль для даного користувача.
+
+7.4. Надати користувачеві повні права на базу даних, замінивши `your_db_user` на логін створеного на попередньому кроці користувача:
+
+```bash
+GRANT ALL PRIVILEGES ON your_db_name.* TO 'your_db_user'@'%';
+```
+
+7.5. Примусово оновити привілеї:
+
+```bash
+FLUSH PRIVILEGES;
+```
+Базу даних та користувача успішно створено.
+
+7.6. Вийти з консолі MariaDB:
+
+```bash
+exit
+```
+
+### 8. Клонувати репозиторій:
+
+```bash
+git clone https://github.com/MadCat-88/Trembita_Py_S_SyncSrv.git
+```
+
+### 9. Перейти до директорії з вебсервісом:
+
+```bash
+cd Trembita_Py_S_SyncSrv
+```
+
+### 10. Виконати конфігурацію вебсервісу згідно [настанов з конфігурації](./configuration.md).
+
+### 11. Створити віртуальне середовище:
+
 ```bash
 python3.10 -m venv soap_sync_service
+```
+
+### 12. Активувати віртуальне середовище:
+
+```bash
 source soap_sync_service/bin/activate
 ```
 
-###  9. Встановіть залежності:
+### 13. Встановити залежності:
+
 ```bash
 pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-### 10. Створіть структуру бд за допомогою alembic:
+### 14. Створити структуру БД, для чого необхідно:
+
+14.1. Створити початкову міграцію:
 ```bash
 alembic revision --autogenerate -m "Init migration"
+```
+
+14.2. Налаштувати міграції для створення структури бази даних:
+```head
 alembic upgrade head
 ```
 
-### 11. Створіть systemd файл:
+### 15. Створити systemd unit-файл для запуску вебсервісу:
+
 ```bash
-sudo bash -c "cat > /etc/systemd/system/soap_sync_service_gunicorn.service" << EOL
+sudo bash -c "cat > /etc/systemd/system/soap_sync_service.service" << EOL
 [Unit]
 Description=SOAP Service by Guvicorn
 After=network.target
@@ -149,7 +152,7 @@ After=network.target
 [Service]
 User=$USER
 WorkingDirectory=$PWD
-ExecStart=$PWD/$VENV_DIR/bin/gunicorn -c  gunicorn_config.py main:wsgi_application
+ExecStart=$PWD/venu/bin/gunicorn -c  gunicorn_config.py main:wsgi_application
 Restart=always
 RestartSec=3
 
@@ -158,12 +161,17 @@ WantedBy=multi-user.target
 EOL
 ```
 
-### 12. Перезавантажте systemd
+### 16. Перезавантажити конфігурацію systemd:
+
 ```bash
 sudo systemctl daemon-reload
 ```
 
-### 13. Запустіть сервіс за допомогою команди:
+### 17. Додати вебсервіс до автозапуску:
+
 ```bash
-sudo systemctl start soap_sync_service_gunicorn
+sudo systemctl enable soap_sync_service
 ```
+
+##
+Матеріали створено за підтримки проєкту міжнародної технічної допомоги «Підтримка ЄС цифрової трансформації України (DT4UA)».
