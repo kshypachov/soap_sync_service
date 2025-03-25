@@ -44,7 +44,7 @@ sudo apt install -y "${packages[@]}"
 
 # Налаштування репозиторію MariaDB
 echo -e "${GREEN}Налаштування репозиторію MariaDB...${RESET}"
-curl -sS https://downloads.mariadb.com/MariaDB/mariadb_repo_setup | sudo bash
+curl -LsS https://r.mariadb.com/downloads/mariadb_repo_setup | sudo bashh
 
 # Встановлення MariaDB сервера
 echo -e "${GREEN}Встановлення MariaDB сервера...${RESET}"
